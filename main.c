@@ -100,7 +100,6 @@ int main(void)
 						
 		if (BLmesIsComplete) 
 			{
-			//BL_SendStr (BluetoothMessage);
 						
 			BL_DefComd(); // defining gotten message from bluetooth (smartphone)
 			BLmesIsComplete = 0;  // reset flag "complete message from smartphone"
@@ -123,7 +122,7 @@ int main(void)
 				DebugAsk = 0;
 			}
 				
-		if (PWMvalue && (ScaleValue > 20))
+		if (PWMvalue && (ScaleValue > 18))
 				{
 					PWM_PinValue();   // write gotten correction value from smartphone to OCR2A for change OC2A pin PWM
 					ScaleValueDetect = ScaleValue; 
