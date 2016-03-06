@@ -73,6 +73,7 @@ char* IntToStrKey(uint16_t val, char *buffer, char key)
 	char *str;
 	str = IntToStr (val, buffer) - 1;
 	*str = key;
+	return str;
 }
 
 
@@ -95,9 +96,11 @@ void BL_DefComd()
 	if ((BluetoothMessage[0] == '-')|(BluetoothMessage[0] == '+'))
 	{
 		PWMvalue = atoi(BluetoothMessage+1);
+		StrPWMValueptr = IntToStrKey(PWMvalue, StrPWMValue, 'p');
 		
 		 //convert our string into float integer
 		//BL_FlushRxBuf();
 	} 
+	
 }
 

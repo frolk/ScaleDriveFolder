@@ -33,7 +33,7 @@ int main(void)
 				ScaleValueChange = ScaleValue;
 				StrScaleDetectptr = IntToStrKey(ScaleValueDetect, StrScaleValueDetect, 's');
 				StrOCRptr = IntToStrKey(OCR2A, StrOCR, 'o');
-				StrPWMValueptr = IntToStrKey(PWMvalue, StrPWMValue, 'p');
+				
 				
 				BL_SendStr (SWscaleValueForBL);
 				BL_SendStr(StrScaleDetectptr);

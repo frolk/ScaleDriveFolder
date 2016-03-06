@@ -17,7 +17,7 @@ void UART_Init (unsigned int ubrr); // initialize UART
 
 char* IntToStrKey(uint16_t val, char *buffer, char key);
 
-char *StrPWMValueptr;
+extern char *StrPWMValueptr;
 
 char StrPWMValue[6];
 
