@@ -18,9 +18,6 @@ volatile uint8_t SWmesIsComplete;
 char SWscaleValueForBL[10];
 volatile float ScaleValue;
 
-
-//volatile float ScaleValue;
-
 void SW_FlushRxBuf()
 {
 	SWrxCount = 0;
