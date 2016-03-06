@@ -6,22 +6,17 @@
 #include "RX_UART.h"
 #include <avr/interrupt.h>
 
-
-
-//uint32_t dutyCycle = 0;
-
-uint8_t BluetoothMessage[10];
+char BluetoothMessage[10];
 uint16_t PWMvalue = 0;
 
 char *StrPWMValueptr;
 char StrPWMValue[6];
 float ScaleValueChange;
 uint16_t ScaleValueDetect;
-char StrScaleValueDetect[6];
-char StrOCR[6];
+char StrScaleValueDetect[6]; 
+char StrOCR[6];  // The value of OCR2A register
 char *StrScaleDetectptr;
 char *StrOCRptr;
-
 
 void PWM_Init()
 {
@@ -31,13 +26,10 @@ void PWM_Init()
 	OCR2A = 0x00;
 }
 
-
 void PWM_PinValue()
 {
 	OCR2A = PWMvalue;
 }
-
-
 
 char* IntToStr(uint16_t n, char *buffer)
 {
@@ -82,8 +74,6 @@ char* IntToStrKey(uint16_t val, char *buffer, char key)
 	*str = key;
 	return str;
 }
-
-
 
 void BL_GetMessage() // getting value from ring buffer to BlutoothMessage array
 {
