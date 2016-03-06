@@ -57,7 +57,7 @@ char* shift_and_mul_utoa16(uint16_t n, char *buffer)
 
 int main(void)
 {
-	SW_RX_Init(); 
+	//SW_RX_Init(); 
 	BL_Init(MYUBRR);
 	PWM_Init();
 		
