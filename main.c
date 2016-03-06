@@ -23,7 +23,7 @@ char *StrOCRptr;
 
 int main(void)
 {
-	//SW_RX_Init(); 
+	SW_RX_Init(); 
 	BL_Init(MYUBRR);
 	PWM_Init();
 		
