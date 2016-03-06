@@ -15,6 +15,7 @@ extern uint8_t PWMChanged;
 	
 void UART_Init (unsigned int ubrr); // initialize UART
 
+extern char* shift_and_mul_utoa16(uint16_t n, char *buffer);
 
 #endif 
 
