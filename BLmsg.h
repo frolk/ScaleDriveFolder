@@ -12,8 +12,6 @@ void BL_GetMessage();
 extern uint8_t BluetoothMessage[10];
 
 extern uint8_t PWMChanged;
-
-extern char* shift_and_mul_utoa16(uint16_t n, char *buffer);
 	
 void UART_Init (unsigned int ubrr); // initialize UART
 
