@@ -100,7 +100,6 @@ int main(void)
 						
 		if (BLmesIsComplete) 
 			{
-			//BL_SendStr (BluetoothMessage);
 						
 			BL_DefComd(); // defining gotten message from bluetooth (smartphone)
 			BLmesIsComplete = 0;  // reset flag "complete message from smartphone"
