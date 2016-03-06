@@ -1,7 +1,7 @@
 
 #include <stdlib.h>
 #include <avr/io.h>
-#include "BLdefComd.h"
+#include "BLmsg.h"
 #include "BLrxtx.h"
 #include <avr/interrupt.h>
 
@@ -12,6 +12,12 @@
 uint8_t BluetoothMessage[10];
 uint16_t PWMvalue = 0;
 
+//void ConvParamStrWithKey(int param, char* addBuffer, char key)
+//{
+	//
+	//StrScaleDetectptr = shift_and_mul_utoa16 (, StrScaleValueDetect) - 1;
+	//*StrScaleDetectptr = 's';
+//}
 
 
 void BL_GetMessage() // getting value from ring buffer to BlutoothMessage array

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "RX_UART.h"
 #include "BLrxtx.h"
-#include "BLdefComd.h"
+#include "BLmsg.h"
 #include "PWM.h"
 
 float ScaleValue;
@@ -18,6 +18,7 @@ uint8_t PWMChanged;
 char *StrScaleDetectptr;
 char *StrPWMValueptr;
 char *StrOCRptr;
+
 
 char* shift_and_mul_utoa16(uint16_t n, char *buffer)
 {
@@ -57,6 +58,8 @@ char* shift_and_mul_utoa16(uint16_t n, char *buffer)
 
 int main(void)
 {
+	
+	
 	SW_RX_Init(); 
 	BL_Init(MYUBRR);
 	PWM_Init();
@@ -67,6 +70,9 @@ int main(void)
 			{
 				SW_RX_Fill_Buffer();
 			}
+		
+		
+		
 		if(SWmesIsComplete)
 			{
 
@@ -83,8 +89,6 @@ int main(void)
 				*StrScaleDetectptr = 's';
 				BL_SendStr(StrScaleDetectptr);
 				
-				StrPWMValueptr = shift_and_mul_utoa16 (PWMvalue, StrPWMValue) - 1;
-				*StrPWMValueptr = 'p';
 				BL_SendStr(StrPWMValueptr);
 				
 				StrOCRptr = shift_and_mul_utoa16 (OCR2A, StrOCR) - 1;
@@ -100,8 +104,6 @@ int main(void)
 						
 		if (BLmesIsComplete) 
 			{
-			//BL_SendStr (BluetoothMessage);
-						
 			BL_DefComd(); // defining gotten message from bluetooth (smartphone)
 			BLmesIsComplete = 0;  // reset flag "complete message from smartphone"
 			}
@@ -127,6 +129,8 @@ int main(void)
 				{
 					PWM_PinValue();   // write gotten correction value from smartphone to OCR2A for change OC2A pin PWM
 					ScaleValueDetect = ScaleValue; 
+					StrPWMValueptr = shift_and_mul_utoa16 (PWMvalue, StrPWMValue) - 1;
+				*StrPWMValueptr = 'p';
 				}	
 				
 		if((ScaleValue < (ScaleValueDetect - 2)) && (ScaleValue > 5))
