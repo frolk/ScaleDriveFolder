@@ -2,7 +2,6 @@
 #ifndef BLdefComd_H_
 #define BLdefComd_H_
 
-extern char* IntToStr(uint16_t n, char *buffer);
 
 extern uint16_t PWMvalue;
 
