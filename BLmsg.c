@@ -128,7 +128,7 @@ void BL_SendMsg()
 			{
 				ScaleValueChange = ScaleValue;
 				StrScaleDetectptr = IntToStrKey(ScaleValueDetect, StrScaleValueDetect, 's');
-				
+				;
 				
 				
 				BL_SendStr (SWscaleValueForBL);
@@ -136,9 +136,8 @@ void BL_SendMsg()
 				BL_SendStr(StrPWMValueptr);
 				BL_SendStr(StrOCRptr1);
 				BL_SendStr(StrOCRptr2);
-			}	
 				
-							
+			}	
 	}
 
  void BL_SetCorrect()
