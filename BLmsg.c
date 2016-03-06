@@ -1,7 +1,7 @@
 
 #include <stdlib.h>
 #include <avr/io.h>
-#include "BLdefComd.h"
+#include "BLmsg.h"
 #include "BLrxtx.h"
 #include <avr/interrupt.h>
 
