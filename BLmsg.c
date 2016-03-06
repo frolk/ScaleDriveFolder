@@ -3,6 +3,7 @@
 #include <avr/io.h>
 #include "BLmsg.h"
 #include "BLrxtx.h"
+#include "RX_UART.h"
 #include <avr/interrupt.h>
 
 
@@ -14,6 +15,12 @@ uint16_t PWMvalue = 0;
 
 char *StrPWMValueptr;
 char StrPWMValue[6];
+float ScaleValueChange;
+uint16_t ScaleValueDetect;
+char StrScaleValueDetect[6];
+char StrOCR[6];
+char *StrScaleDetectptr;
+char *StrOCRptr;
 
 
 void PWM_Init()
@@ -91,6 +98,11 @@ void BL_GetMessage() // getting value from ring buffer to BlutoothMessage array
 
 void BL_DefComd()
 {
+	if (BLmesIsComplete)
+	{
+		//BL_SendStr (BluetoothMessage);
+		
+	
 	
 	BL_GetMessage(); //pulling up buffer's data one by one
 	if ((BluetoothMessage[0] == '-')|(BluetoothMessage[0] == '+'))
@@ -100,7 +112,44 @@ void BL_DefComd()
 		
 		 //convert our string into float integer
 		//BL_FlushRxBuf();
-	} 
+	}
+	
+	BLmesIsComplete = 0;  // reset flag "complete message from smartphone"
+	
+	}
 	
 }
 
+void BL_SendMsg()
+	{
+			if ((ScaleValue > 0) && (ScaleValue != ScaleValueChange))
+			{
+				ScaleValueChange = ScaleValue;
+				StrScaleDetectptr = IntToStrKey(ScaleValueDetect, StrScaleValueDetect, 's');
+				StrOCRptr = IntToStrKey(OCR2A, StrOCR, 'o');
+				
+				
+				BL_SendStr (SWscaleValueForBL);
+				BL_SendStr(StrScaleDetectptr);
+				BL_SendStr(StrPWMValueptr);
+				BL_SendStr(StrOCRptr);
+				
+			}	
+	}
+
+ void BL_SetCorrect()
+ {
+	
+	if (PWMvalue && (ScaleValue > 20))
+		{
+			PWM_PinValue();   // write gotten correction value from smartphone to OCR2A for change OC2A pin PWM
+			ScaleValueDetect = ScaleValue;
+		}
+
+	if((ScaleValue < (ScaleValueDetect - 2)) && (ScaleValue > 5))
+		{
+			OCR2A = 0;
+			ScaleValueDetect = 0;
+		}
+
+ }

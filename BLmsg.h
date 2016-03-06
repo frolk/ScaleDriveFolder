@@ -21,6 +21,8 @@ extern char *StrPWMValueptr;
 
 char StrPWMValue[6];
 
+extern void BL_SendMsg();
+
 
 #endif 
 

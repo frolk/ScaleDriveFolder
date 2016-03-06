@@ -36,5 +36,7 @@ void BL_PutChar(char sym); // put one symbol into buffer using txhead pointer
 
 extern void BL_SendStr(char *data); // send string starting from data address
 
+extern void BL_SetCorrect();	
+
 #endif
 

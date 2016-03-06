@@ -170,6 +170,7 @@ void SW_GetScaleValue(void)
 
 		SW_GetMessage();
 		ScaleValue = atof(SWscaleValueForBL+1);
+		SWmesIsComplete = 0;
 	}
 	
 }
