@@ -20,15 +20,30 @@ char *StrOCRptr;
 
 void PWM_Init()
 {
-	DDRB = (1 << PORTB3)|(1 << PORTB5);// set up pin portb3 like output
-	TCCR2A = (1 << WGM21)|(1 << WGM20)|(1<< COM2A1);
-	TCCR2B = (1<<CS20);
-	OCR2A = 0x00;
+	DDRB = (1 << PORTB1)|(1 << PORTB3)|(1 << PORTB5);// OC1A, OC2A and ledPin like OUTPUT
+	
+	/* Timer2 for % correction */
+	TCCR2A = (1 << WGM21)|(1 << WGM20)|(1<< COM2A1); // FastPWM mode for Timer2
+	TCCR2B = (1<<CS20); // Start Timer2 with prescaler 1
+	OCR2A = 0x00; // Reset Compare register OCR of Timer2
+	
+	/* Timer1 for kg correction */
+	TCCR1A = (1 << COM1A1)|(1 << WGM11);
+	TCCR1B = (1 << WGM13)|(1 << WGM12)|(1 << CS10);
+	ICR1 = 65535;
+	OCR1A = 0x0000;
+	
+	
+	
+	
+	
+	
 }
 
 void PWM_PinValue()
 {
-	OCR2A = PWMvalue;
+	//OCR2A = PWMvalue;
+	OCR1A = PWMvalue;
 }
 
 char* IntToStr(uint16_t n, char *buffer)
@@ -138,7 +153,7 @@ void BL_SendMsg()
 
 	if((ScaleValue < (ScaleValueDetect - 2)) && (ScaleValue > 5))
 		{
-			OCR2A = 0;
+			OCR1A = 0;
 			ScaleValueDetect = 0;
 		}
 
