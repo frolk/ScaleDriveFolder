@@ -34,6 +34,7 @@ void BL_DefComd()
 	if ((BluetoothMessage[0] == '-')|(BluetoothMessage[0] == '+'))
 	{
 		PWMvalue = atoi(BluetoothMessage+1); //convert our string into float integer
+		//BL_FlushRxBuf();
 	} 
 }
 
