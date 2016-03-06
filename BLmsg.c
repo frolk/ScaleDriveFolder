@@ -28,9 +28,8 @@ void PWM_Init()
 	OCR2A = 0x00; // Reset Compare register OCR of Timer2
 	
 	/* Timer1 for kg correction */
-	TCCR1A = (1 << COM1A1)|(1 << WGM11);
-	TCCR1B = (1 << WGM13)|(1 << WGM12)|(1 << CS10);
-	ICR1 = 65535;
+	TCCR1A = (1 << COM1A1)|(1 << WGM11)|(1 << WGM10);
+	TCCR1B = (1 << WGM12)|(1 << CS10);
 	OCR1A = 0x0000;
 	
 	
