@@ -100,10 +100,7 @@ int main(void)
 						
 		if (BLmesIsComplete) 
 			{
-<<<<<<< HEAD
-=======
 			//BL_SendStr (BluetoothMessage);
->>>>>>> parent of fe7833a... Refactor Files
 						
 			BL_DefComd(); // defining gotten message from bluetooth (smartphone)
 			BLmesIsComplete = 0;  // reset flag "complete message from smartphone"
