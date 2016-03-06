@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "RX_UART.h"
 #include "BLrxtx.h"
-#include "BLdefComd.h"
+#include "BLmsg.h"
 #include "PWM.h"
 
 float ScaleValue;
