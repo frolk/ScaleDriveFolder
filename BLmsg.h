@@ -7,15 +7,20 @@ extern uint16_t PWMvalue;
 
 extern void BL_DefComd();  // define bluetooth command
 
+extern void PWM_Init();
+
 void BL_GetMessage();
 
 extern uint8_t BluetoothMessage[10];
 
-extern uint8_t PWMChanged;
-	
 void UART_Init (unsigned int ubrr); // initialize UART
 
-extern char* shift_and_mul_utoa16(uint16_t n, char *buffer);
+char* IntToStrKey(uint16_t val, char *buffer, char key);
+
+char *StrPWMValueptr;
+
+char StrPWMValue[6];
+
 
 #endif 
 

@@ -4,19 +4,16 @@
 #include "RX_UART.h"
 #include "BLrxtx.h"
 #include "BLmsg.h"
-#include "PWM.h"
 
-float ScaleValue;
 float ScaleValueChange;
 uint16_t ScaleValueDetect;
 uint8_t ScaleValueDetectChange;
+
 char StrScaleValueDetect[6];
-char StrPWMValue[6];
 char StrOCR[6];
 char DebugAskAnswer[16];
-uint8_t PWMChanged;
+
 char *StrScaleDetectptr;
-char *StrPWMValueptr;
 char *StrOCRptr;
 
 
@@ -29,40 +26,23 @@ int main(void)
 		
     while (1) 
     {
-		if(SWrxDataPending)
-			{
-				SW_RX_Fill_Buffer();
-			}
-		if(SWmesIsComplete)
-			{
-
-			SW_GetMessage();
-			ScaleValue = atof(SWscaleValueForBL+1);
+			SW_GetScaleValue();
 			
-			//OCR2A = ScaleValue;
 			if ((ScaleValue > 0) && (ScaleValue != ScaleValueChange))
 			{
 				ScaleValueChange = ScaleValue;
+				StrScaleDetectptr = IntToStrKey(ScaleValueDetect, StrScaleValueDetect, 's');
+				StrOCRptr = IntToStrKey(OCR2A, StrOCR, 'o');
+				StrPWMValueptr = IntToStrKey(PWMvalue, StrPWMValue, 'p');
+				
 				BL_SendStr (SWscaleValueForBL);
-				
-				StrScaleDetectptr = shift_and_mul_utoa16 (ScaleValueDetect, StrScaleValueDetect) - 1;
-				*StrScaleDetectptr = 's';
 				BL_SendStr(StrScaleDetectptr);
-				
-				StrPWMValueptr = shift_and_mul_utoa16 (PWMvalue, StrPWMValue) - 1;
-				*StrPWMValueptr = 'p';
 				BL_SendStr(StrPWMValueptr);
-				
-				StrOCRptr = shift_and_mul_utoa16 (OCR2A, StrOCR) - 1;
-				*StrOCRptr = 'o';
 				BL_SendStr(StrOCRptr);
+				
 				
 			}
 			SWmesIsComplete = 0;		
-			
-			}
-				
-			
 						
 		if (BLmesIsComplete) 
 			{
@@ -70,23 +50,6 @@ int main(void)
 						
 			BL_DefComd(); // defining gotten message from bluetooth (smartphone)
 			BLmesIsComplete = 0;  // reset flag "complete message from smartphone"
-			}
-			
-		if(DebugAsk)
-			{
-				StrScaleDetectptr = shift_and_mul_utoa16 (ScaleValueDetect, StrScaleValueDetect) - 1;
-				*StrScaleDetectptr = 's';
-				BL_SendStr(StrScaleDetectptr);
-				
-				StrPWMValueptr = shift_and_mul_utoa16 (PWMvalue, StrPWMValue) - 1;
-				*StrPWMValueptr = 'p';
-				BL_SendStr(StrPWMValueptr);
-				
-				StrOCRptr = shift_and_mul_utoa16 (OCR2A, StrOCR) - 1;
-				*StrOCRptr = 'o';
-				BL_SendStr(StrOCRptr);
-
-				DebugAsk = 0;
 			}
 				
 		if (PWMvalue && (ScaleValue > 20))

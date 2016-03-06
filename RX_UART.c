@@ -1,6 +1,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <stdlib.h>
 #include "RX_UART.h"
 
 static volatile unsigned char SW_RX_Data;     //!< Storage for received bits.
@@ -15,9 +16,11 @@ volatile uint8_t SWrxMessage[18];
 volatile uint8_t SWrxDataPending;
 volatile uint8_t SWmesIsComplete;
 char SWscaleValueForBL[10];
+volatile float ScaleValue;
+
 
 //volatile float ScaleValue;
-	
+
 void SW_FlushRxBuf()
 {
 	SWrxCount = 0;
@@ -156,6 +159,20 @@ void SW_GetMessage(void)
 	}
 }
 
+void SW_GetScaleValue(void)
+{
+	if(SWrxDataPending)
+	{
+		SW_RX_Fill_Buffer();
+	}
+	if(SWmesIsComplete)
+	{
+
+		SW_GetMessage();
+		ScaleValue = atof(SWscaleValueForBL+1);
+	}
+	
+}
 	
 
 

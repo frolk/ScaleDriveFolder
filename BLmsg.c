@@ -12,7 +12,27 @@
 uint8_t BluetoothMessage[10];
 uint16_t PWMvalue = 0;
 
-char* shift_and_mul_utoa16(uint16_t n, char *buffer)
+char *StrPWMValueptr;
+char StrPWMValue[6];
+
+
+void PWM_Init()
+{
+	DDRB = (1 << PORTB3)|(1 << PORTB5);// set up pin portb3 like output
+	TCCR2A = (1 << WGM21)|(1 << WGM20)|(1<< COM2A1);
+	TCCR2B = (1<<CS20);
+	OCR2A = 0x00;
+}
+
+
+void PWM_PinValue()
+{
+	OCR2A = PWMvalue;
+}
+
+
+
+char* IntToStr(uint16_t n, char *buffer)
 {
 	uint8_t d4, d3, d2, d1, q, d0;
 
@@ -48,6 +68,14 @@ char* shift_and_mul_utoa16(uint16_t n, char *buffer)
 	return buffer;
 }
 
+char* IntToStrKey(uint16_t val, char *buffer, char key)
+{
+	char *str;
+	str = IntToStr (val, buffer) - 1;
+	*str = key;
+}
+
+
 
 void BL_GetMessage() // getting value from ring buffer to BlutoothMessage array
 {
@@ -60,15 +88,15 @@ void BL_GetMessage() // getting value from ring buffer to BlutoothMessage array
 
 }
 
-
-
 void BL_DefComd()
 {
 	
 	BL_GetMessage(); //pulling up buffer's data one by one
 	if ((BluetoothMessage[0] == '-')|(BluetoothMessage[0] == '+'))
 	{
-		PWMvalue = atoi(BluetoothMessage+1); //convert our string into float integer
+		PWMvalue = atoi(BluetoothMessage+1);
+		
+		 //convert our string into float integer
 		//BL_FlushRxBuf();
 	} 
 }

@@ -34,6 +34,7 @@ void SW_FlushRxBuf();
 void SW_RX_Init(void);
 void SW_RX_Fill_Buffer(void);
 extern void SW_GetMessage(void);
+extern void SW_GetScaleValue(void);
 //extern void SW_Define_Data(void);
 
 
@@ -48,6 +49,7 @@ static volatile uint8_t SWrxBufHead;
 static volatile uint8_t SWrxCount;// Receive variables
 extern volatile uint8_t SWmesIsComplete;
 extern char SWscaleValueForBL[10];
+extern volatile float ScaleValue;
 //extern volatile float ScaleValue;
 
 
