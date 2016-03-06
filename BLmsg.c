@@ -14,9 +14,11 @@ char StrPWMValue[6];
 float ScaleValueChange;
 uint16_t ScaleValueDetect;
 char StrScaleValueDetect[6]; 
-char StrOCR[6];  // The value of OCR2A register
+char StrOCR1[6];
+char StrOCR2[6];
 char *StrScaleDetectptr;
-char *StrOCRptr;
+char *StrOCRptr1;
+char *StrOCRptr2;
 
 void PWM_Init()
 {
@@ -28,22 +30,17 @@ void PWM_Init()
 	OCR2A = 0x00; // Reset Compare register OCR of Timer2
 	
 	/* Timer1 for kg correction */
-	TCCR1A = (1 << COM1A1)|(1 << WGM11);
-	TCCR1B = (1 << WGM13)|(1 << WGM12)|(1 << CS10);
-	ICR1 = 65535;
+	TCCR1A = (1 << COM1A1)|(1 << WGM11)|(1 << WGM10);
+	TCCR1B = (1 << WGM12)|(1 << CS10);
 	OCR1A = 0x0000;
-	
-	
-	
-	
-	
-	
 }
 
 void PWM_PinValue()
 {
 	//OCR2A = PWMvalue;
 	OCR1A = PWMvalue;
+	StrOCRptr1 = IntToStrKey(OCR1A, StrOCR1, 'o');
+	StrOCRptr2 = IntToStrKey(OCR2A, StrOCR2, 'c');
 }
 
 char* IntToStr(uint16_t n, char *buffer)
@@ -131,13 +128,14 @@ void BL_SendMsg()
 			{
 				ScaleValueChange = ScaleValue;
 				StrScaleDetectptr = IntToStrKey(ScaleValueDetect, StrScaleValueDetect, 's');
-				StrOCRptr = IntToStrKey(OCR2A, StrOCR, 'o');
+				;
 				
 				
 				BL_SendStr (SWscaleValueForBL);
 				BL_SendStr(StrScaleDetectptr);
 				BL_SendStr(StrPWMValueptr);
-				BL_SendStr(StrOCRptr);
+				BL_SendStr(StrOCRptr1);
+				BL_SendStr(StrOCRptr2);
 				
 			}	
 	}
