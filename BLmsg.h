@@ -10,6 +10,8 @@ extern void BL_DefComd();  // define bluetooth command
 
 extern void PWM_Init();
 
+extern void DefineScale();
+
 void BL_GetMessage();
 
 extern char BluetoothMessage[10];
@@ -37,6 +39,13 @@ float ScaleValueChange;
 uint16_t ScaleValueDetect;
 char StrScaleValueDetect[7];
 char *StrScaleDetectptr;
+
+
+
+extern uint8_t DefineScaleMode;
+extern uint8_t TimerOVF_count;
+extern uint8_t TimerOVF_countFinish;
+extern uint8_t DefinedDiscret;
 
 float DiscretValue;
 

@@ -21,6 +21,11 @@ int main(void)
 			BL_SetCorrect();	
 			
 			BL_SendMsg();
+			
+			if(DefineScaleMode != 0)
+			{
+				DefineScale();
+			}
 				
 	}
 }

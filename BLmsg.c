@@ -37,10 +37,11 @@ uint8_t TimerOVF_count;
 uint8_t TimerOVF_countFinish = 0;
 uint8_t DefinedDiscret = 0;
 
+
 ISR(TIMER1_OVF_vect)
 {
 	TimerOVF_count++;
-	if (TimerOVF_count == 200)
+	if (TimerOVF_count == 255)
 	{
 		TimerOVF_countFinish = 1;		
 	}
@@ -69,7 +70,7 @@ void DefineScale()
 			TimerOVF_countFinish = 0;
 			if ((ScaleValue > 0) && (ScaleValue != ScaleValueChange) && (ScaleValue > ScaleValueChange))
 				{
-					
+					ScaleValueChange = ScaleValue;
 					StrOCRptr1 = IntToStrKey(OCR1A, StrOCR1, 'o', ',');
 					BL_SendStr(StrOCRptr1);
 					
@@ -81,6 +82,7 @@ void DefineScale()
 						} // if first time changed ScaleValue, i.e got discret
 					
 					BL_SendStr (SWscaleValueForBL);
+					BL_SendStr("\n\r");
 					
 					
 				}
@@ -88,8 +90,15 @@ void DefineScale()
 			OCR1A++; // increase PWM signal on optocoupler
 		}
 	
+	if (OCR1A >= 400)
+	{
+		BluetoothMessage[0] = 'f'; //disable executing DefineScale function
+		DefineScaleMode = 0;  // reset flag
+		PWM_Init(); // return timer1 setting to default
+		OCR1A = 0;
+	}
 	
-	PWM_Init(); // return timer1 setting to default
+	
 }
 
 char* IntToStr(uint16_t n, char *buffer)
@@ -217,7 +226,7 @@ void BL_DefComd()
 
 void BL_SendMsg()
 	{
-			if ((ScaleValue > 0) && (ScaleValue != ScaleValueChange) && (BluetoothMessage[0] != 'c'))
+			if ((ScaleValue > 0) && (ScaleValue != ScaleValueChange) && (!DefineScaleMode))
 			{
 		
 				ScaleValueChange = ScaleValue;
@@ -240,7 +249,7 @@ void BL_SetCorrect()
 			ScaleValueDetect = ScaleValue;
 		}
 
-	if((ScaleValue < (ScaleValueDetect - 2)) && (ScaleValue > 5))
+	if((ScaleValue < (ScaleValueDetect - 2)) && (ScaleValue > 5) && (!DefineScaleMode))
 		{
 			OCR1A = 0;
 			OCR2A = 0;
