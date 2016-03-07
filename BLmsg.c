@@ -7,41 +7,28 @@
 #include <avr/interrupt.h>
 
 char BluetoothMessage[10];
-uint16_t PWMvalue = 0;
 
-char *StrPWMValueptr;
-char StrPWMValue[6];
+uint16_t PWMvalue1= 0;
+char *StrPWMvalueptr1;
+char StrPWMvalue1[7];
+
+uint16_t PWMvalue2= 0;
+char *StrPWMvalueptr2;
+char StrPWMvalue2[7];
+
 float ScaleValueChange;
 uint16_t ScaleValueDetect;
-char StrScaleValueDetect[6]; 
-char StrOCR1[6];
-char StrOCR2[6];
+char StrScaleValueDetect[7]; 
+char StrOCR1[7];
+char StrOCR2[7];
 char *StrScaleDetectptr;
 char *StrOCRptr1;
 char *StrOCRptr2;
 
-void PWM_Init()
-{
-	DDRB = (1 << PORTB1)|(1 << PORTB3)|(1 << PORTB5);// OC1A, OC2A and ledPin like OUTPUT
-	
-	/* Timer2 for % correction */
-	TCCR2A = (1 << WGM21)|(1 << WGM20)|(1<< COM2A1); // FastPWM mode for Timer2
-	TCCR2B = (1<<CS20); // Start Timer2 with prescaler 1
-	OCR2A = 0x00; // Reset Compare register OCR of Timer2
-	
-	/* Timer1 for kg correction */
-	TCCR1A = (1 << COM1A1)|(1 << WGM11)|(1 << WGM10);
-	TCCR1B = (1 << WGM12)|(1 << CS10);
-	OCR1A = 0x0000;
-}
+uint8_t PWMValueChanged1 = 0;
+uint8_t PWMValueChanged2 = 0;
 
-void PWM_PinValue()
-{
-	//OCR2A = PWMvalue;
-	OCR1A = PWMvalue;
-	StrOCRptr1 = IntToStrKey(OCR1A, StrOCR1, 'o');
-	StrOCRptr2 = IntToStrKey(OCR2A, StrOCR2, 'c');
-}
+
 
 char* IntToStr(uint16_t n, char *buffer)
 {
@@ -79,12 +66,56 @@ char* IntToStr(uint16_t n, char *buffer)
 	return buffer;
 }
 
-char* IntToStrKey(uint16_t val, char *buffer, char key)
+char* IntToStrKey(uint16_t val, char *buffer, char key1, char key2)
 {
-	char *str;
-	str = IntToStr (val, buffer) - 1;
-	*str = key;
-	return str;
+	char *str1;
+	char *str2;
+	str1 = IntToStr (val, buffer) - 2;
+	str2 = IntToStr (val, buffer) - 1;
+	*str1 = key1;
+	*str2 = key2;
+	return str1;
+}
+
+void PWM_Init()
+{
+	DDRB = (1 << PORTB1)|(1 << PORTB3)|(1 << PORTB5);// OC1A, OC2A and ledPin like OUTPUT
+	
+	/* Timer2 for % correction */
+	TCCR2A = (1 << WGM21)|(1 << WGM20)|(1<< COM2A1); // FastPWM mode for Timer2
+	TCCR2B = (1<<CS20); // Start Timer2 with prescaler 1
+	OCR2A = 0x00; // Reset Compare register OCR of Timer2
+	
+	/* Timer1 for kg correction */
+	TCCR1A = (1 << COM1A1)|(1 << WGM11)|(1 << WGM10);
+	TCCR1B = (1 << WGM12)|(1 << CS10);
+	OCR1A = 0x0000;
+}
+
+void PWM_PinValue1()
+{
+	//OCR2A = PWMvalue;
+	OCR1A = PWMvalue1;
+	StrOCRptr1 = IntToStrKey(OCR1A, StrOCR1, 'o', ',');
+	if(StrOCR1_lastValue != OCR1A)
+	{
+		BL_SendStr(StrOCRptr1);
+		StrOCR1_lastValue = OCR1A;
+		
+	}
+}
+
+void PWM_PinValue2()
+{
+	//OCR2A = PWMvalue;
+	OCR2A = PWMvalue2;
+	StrOCRptr2 = IntToStrKey(OCR2A, StrOCR2, 'c',',');
+	if(StrOCR2_lastValue != OCR2A)
+	{
+		BL_SendStr(StrOCRptr2);
+		StrOCR2_lastValue = OCR2A;
+		
+	}
 }
 
 void BL_GetMessage() // getting value from ring buffer to BlutoothMessage array
@@ -101,25 +132,16 @@ void BL_GetMessage() // getting value from ring buffer to BlutoothMessage array
 void BL_DefComd()
 {
 	if (BLmesIsComplete)
-	{
-		//BL_SendStr (BluetoothMessage);
-		
-	
-	
-	BL_GetMessage(); //pulling up buffer's data one by one
-	if ((BluetoothMessage[0] == '-')|(BluetoothMessage[0] == '+'))
-	{
-		PWMvalue = atoi(BluetoothMessage+1);
-		StrPWMValueptr = IntToStrKey(PWMvalue, StrPWMValue, 'p');
-		
-		 //convert our string into float integer
-		//BL_FlushRxBuf();
-	}
-	
-	BLmesIsComplete = 0;  // reset flag "complete message from smartphone"
-	
-	}
-	
+		{
+			BL_GetMessage(); //pulling up buffer's data one by one
+			if ((BluetoothMessage[0] == '-')|(BluetoothMessage[0] == '+'))
+				{
+					PWMvalue1= atoi(BluetoothMessage+1);
+					StrPWMvalueptr1 = IntToStrKey(PWMvalue1, StrPWMvalue1, 'p', ',');
+					BL_SendStr(StrPWMvalueptr1);
+				}
+			BLmesIsComplete = 0;  // reset flag "complete message from smartphone"
+		}
 }
 
 void BL_SendMsg()
@@ -127,31 +149,29 @@ void BL_SendMsg()
 			if ((ScaleValue > 0) && (ScaleValue != ScaleValueChange))
 			{
 				ScaleValueChange = ScaleValue;
-				StrScaleDetectptr = IntToStrKey(ScaleValueDetect, StrScaleValueDetect, 's');
-				;
-				
-				
+				StrScaleDetectptr = IntToStrKey(ScaleValueDetect, StrScaleValueDetect, 's', ',');
 				BL_SendStr (SWscaleValueForBL);
 				BL_SendStr(StrScaleDetectptr);
-				BL_SendStr(StrPWMValueptr);
 				BL_SendStr(StrOCRptr1);
 				BL_SendStr(StrOCRptr2);
-				
+				BL_SendStr(StrPWMvalueptr1);
 			}	
 	}
 
- void BL_SetCorrect()
+void BL_SetCorrect()
+
  {
 	
-	if (PWMvalue && (ScaleValue > 20))
+	if (PWMvalue1 && (ScaleValue > 20))
 		{
-			PWM_PinValue();   // write gotten correction value from smartphone to OCR2A for change OC2A pin PWM
+			PWM_PinValue1();   // write gotten correction value from smartphone to OCR2A for change OC2A pin PWM
 			ScaleValueDetect = ScaleValue;
 		}
 
 	if((ScaleValue < (ScaleValueDetect - 2)) && (ScaleValue > 5))
 		{
 			OCR1A = 0;
+			OCR2A = 0;
 			ScaleValueDetect = 0;
 		}
 

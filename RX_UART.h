@@ -34,7 +34,7 @@ void SW_FlushRxBuf();
 void SW_RX_Init(void);
 void SW_RX_Fill_Buffer(void);
 extern void SW_GetMessage(void);
-extern void SW_GetScaleValue(void);
+extern void SW_GetScaleValue();
 //extern void SW_Define_Data(void);
 
 

@@ -139,11 +139,12 @@ void SW_GetMessage(void)
 {
 	uint8_t j;
 	uint8_t i;
-	for (i=0, j=1; i<18; i++)
+	for (i=0, j=2; i<18; i++)
 	{
 		char SWvalue = SW_GetChar();
 		SWrxMessage[i] = SWvalue;
 		SWscaleValueForBL[0] = 'v';
+		SWscaleValueForBL[1] = ',';
 		if ( (i>6) && (i<14) && (SWrxMessage[i] != ' '))
 			{
 				SWscaleValueForBL[j] = SWvalue;
@@ -166,7 +167,7 @@ void SW_GetScaleValue(void)
 	{
 
 		SW_GetMessage();
-		ScaleValue = atof(SWscaleValueForBL+1);
+		ScaleValue = atof(SWscaleValueForBL+2);
 		SWmesIsComplete = 0;
 	}
 	
