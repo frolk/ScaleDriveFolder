@@ -95,7 +95,7 @@ void DefineScale()
 		BluetoothMessage[0] = 'f'; //disable executing DefineScale function
 		DefineScaleMode = 0;  // reset flag
 		PWM_Init(); // return timer1 setting to default
-		OCR1A = 0;
+		UCSR0B &= ~ (1 << RXCIE0)|(1 << RXEN0);
 	}
 	
 	
@@ -236,6 +236,7 @@ void BL_SendMsg()
 				BL_SendStr(StrOCRptr1);
 				BL_SendStr(StrOCRptr2);
 				BL_SendStr(StrPWMvalueptr1);
+				BL_SendStr("\n\r");
 			}	
 	}
 
