@@ -38,6 +38,8 @@ uint16_t ScaleValueDetect;
 char StrScaleValueDetect[7];
 char *StrScaleDetectptr;
 
+float DiscretValue;
+
 extern void BL_SendMsg();
 
 

@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <avr/io.h>
 #include "BLmsg.h"
@@ -7,7 +6,9 @@
 #include <avr/interrupt.h>
 
 char BluetoothMessage[10];
+float DiscretValue;
 
+//Parameters for sending via BL
 uint16_t PWMvalue1= 0;
 char *StrPWMvalueptr1;
 char StrPWMvalue1[7];
@@ -15,6 +16,9 @@ char StrPWMvalue1[7];
 uint16_t PWMvalue2= 0;
 char *StrPWMvalueptr2;
 char StrPWMvalue2[7];
+
+uint32_t ScaleNPV;
+
 
 float ScaleValueChange;
 uint16_t ScaleValueDetect;
@@ -26,9 +30,67 @@ char *StrOCRptr1;
 char *StrOCRptr2;
 
 uint8_t PWMValueChanged1 = 0;
-uint8_t PWMValueChanged2 = 0;
+uint8_t PWMValueChanged2 = 0; 
 
+uint8_t DefineScaleMode = 0;
+uint8_t TimerOVF_count; 
+uint8_t TimerOVF_countFinish = 0;
+uint8_t DefinedDiscret = 0;
 
+ISR(TIMER1_OVF_vect)
+{
+	TimerOVF_count++;
+	if (TimerOVF_count == 200)
+	{
+		TimerOVF_countFinish = 1;		
+	}
+	
+}
+
+void DefineScale()
+{
+	//TCCR1A = 0;
+	//TCCR1B = (1 << WGM12)|(1 << CS12)|(1 << CS10); // CTC mode, start timer1 with 1024 prescaler
+	//TIFR1 |= (1 << OCF1A); // reset output compare match flag
+	//OCR1A = 3125;  // count up to 0.2ms (for getting whole message from scale + define scaleValue) // tried to change timer settings. But timer is busy when we use PWM
+// one time set up settings for defining scale mode
+	if (DefineScaleMode == 1)
+	{
+	UCSR0B &= ~ (1 << RXCIE0)|(1 << RXEN0); // disable rx interrupt while define scale
+	TIMSK1 |= (1 << TOIE1);
+	TCNT1 = 0; // reset timer1
+	TimerOVF_count = 0;
+	DefineScaleMode = 2;  // set up mode "in process"
+	} 
+	
+// if spent 0.2ms time try to get OCR value of new ScaleValue	
+	if (TimerOVF_countFinish == 1)
+		{
+			TimerOVF_countFinish = 0;
+			if ((ScaleValue > 0) && (ScaleValue != ScaleValueChange) && (ScaleValue > ScaleValueChange))
+				{
+					
+					StrOCRptr1 = IntToStrKey(OCR1A, StrOCR1, 'o', ',');
+					BL_SendStr(StrOCRptr1);
+					
+					if(!DefinedDiscret)
+						{
+						DiscretValue = ScaleValue - ScaleValueChange;
+						DefinedDiscret = 1;
+						BL_SendStr ("d");
+						} // if first time changed ScaleValue, i.e got discret
+					
+					BL_SendStr (SWscaleValueForBL);
+					
+					
+				}
+
+			OCR1A++; // increase PWM signal on optocoupler
+		}
+	
+	
+	PWM_Init(); // return timer1 setting to default
+}
 
 char* IntToStr(uint16_t n, char *buffer)
 {
@@ -85,7 +147,6 @@ void PWM_Init()
 	TCCR2A = (1 << WGM21)|(1 << WGM20)|(1<< COM2A1); // FastPWM mode for Timer2
 	TCCR2B = (1<<CS20); // Start Timer2 with prescaler 1
 	OCR2A = 0x00; // Reset Compare register OCR of Timer2
-	
 	/* Timer1 for kg correction */
 	TCCR1A = (1 << COM1A1)|(1 << WGM11)|(1 << WGM10);
 	TCCR1B = (1 << WGM12)|(1 << CS10);
@@ -101,7 +162,6 @@ void PWM_PinValue1()
 	{
 		BL_SendStr(StrOCRptr1);
 		StrOCR1_lastValue = OCR1A;
-		
 	}
 }
 
@@ -140,14 +200,26 @@ void BL_DefComd()
 					StrPWMvalueptr1 = IntToStrKey(PWMvalue1, StrPWMvalue1, 'p', ',');
 					BL_SendStr(StrPWMvalueptr1);
 				}
+			
+			else if (BluetoothMessage[0] == 'c')
+			{
+				if (DefineScaleMode == 0)
+				{
+					DefineScaleMode = 1;  // first timer we entry into this function
+				}
+				DefineScale();				
+			}
+			
+			
 			BLmesIsComplete = 0;  // reset flag "complete message from smartphone"
 		}
 }
 
 void BL_SendMsg()
 	{
-			if ((ScaleValue > 0) && (ScaleValue != ScaleValueChange))
+			if ((ScaleValue > 0) && (ScaleValue != ScaleValueChange) && (BluetoothMessage[0] != 'c'))
 			{
+		
 				ScaleValueChange = ScaleValue;
 				StrScaleDetectptr = IntToStrKey(ScaleValueDetect, StrScaleValueDetect, 's', ',');
 				BL_SendStr (SWscaleValueForBL);
@@ -176,3 +248,17 @@ void BL_SetCorrect()
 		}
 
  }
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
