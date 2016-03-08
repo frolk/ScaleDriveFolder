@@ -45,7 +45,7 @@ uint8_t DefinedDiscret = 0;
 ISR(TIMER1_OVF_vect)
 {
 	TimerOVF_count++;
-	if (TimerOVF_count == 800)
+	if (TimerOVF_count == 1000)
 	{
 		TimerOVF_countFinish = 1;		
 	}
@@ -75,13 +75,14 @@ void DefineScale()
 				{
 					ScaleValueChange = ScaleValue;
 					StrOCRptr1 = IntToStrKey(OCR1A, StrOCR1, 'o', ',');
+					BL_SendStr("d");
 					BL_SendStr(StrOCRptr1);
 					
 					if(!DefinedDiscret)
 						{
 						DiscretValue = ScaleValue - ScaleValueChange;
 						DefinedDiscret = 1;
-						BL_SendStr ("d");
+						BL_SendStr ("e");
 						} // if first time changed ScaleValue, i.e got discret
 					
 					BL_SendStr (SWscaleValueForBL);
@@ -96,7 +97,7 @@ void DefineScale()
 	if (OCR1A >= 500)
 	{
 		BL_SendStr("defined");
-		BluetoothMessage[0] = 'f'; //disable executing DefineScale function
+		//BluetoothMessage[0] = 'f'; //disable executing DefineScale function
 		DefineScaleMode = 0;  // reset flag
 		PWM_Init(); // return timer1 setting to default
 		UCSR0B |= (1 << RXCIE0)|(1 << RXEN0);
@@ -245,8 +246,8 @@ void BL_SendMsg()
 				BL_SendStr(StrScaleDetectptr);
 				BL_SendStr(StrOCRptr1);
 				BL_SendStr(StrOCRptr2);
-				BL_SendStr(StrPWMvalueptr1);
 				BL_SendStr("\n\r");
+				
 			}	
 	}
 
