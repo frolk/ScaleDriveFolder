@@ -5,6 +5,10 @@
 #include "RX_UART.h"
 #include <avr/interrupt.h>
 
+
+#define	SEND_OCR1A		StrOCRptr1 = IntToStrKey(OCR1A, StrOCR1, 'o', ',');\
+						BL_SendStr(StrOCRptr1);
+
 char BluetoothMessage[10];
 float DiscretValue;
 
@@ -33,7 +37,7 @@ uint8_t PWMValueChanged1 = 0;
 uint8_t PWMValueChanged2 = 0; 
 
 uint8_t DefineScaleMode = 0;
-uint8_t TimerOVF_count; 
+uint16_t TimerOVF_count; 
 uint8_t TimerOVF_countFinish = 0;
 uint8_t DefinedDiscret = 0;
 
@@ -41,7 +45,7 @@ uint8_t DefinedDiscret = 0;
 ISR(TIMER1_OVF_vect)
 {
 	TimerOVF_count++;
-	if (TimerOVF_count == 255)
+	if (TimerOVF_count == 800)
 	{
 		TimerOVF_countFinish = 1;		
 	}
@@ -50,24 +54,23 @@ ISR(TIMER1_OVF_vect)
 
 void DefineScale()
 {
-	//TCCR1A = 0;
-	//TCCR1B = (1 << WGM12)|(1 << CS12)|(1 << CS10); // CTC mode, start timer1 with 1024 prescaler
-	//TIFR1 |= (1 << OCF1A); // reset output compare match flag
-	//OCR1A = 3125;  // count up to 0.2ms (for getting whole message from scale + define scaleValue) // tried to change timer settings. But timer is busy when we use PWM
 // one time set up settings for defining scale mode
 	if (DefineScaleMode == 1)
 	{
+	BL_SendStr("Starting...");
 	UCSR0B &= ~ (1 << RXCIE0)|(1 << RXEN0); // disable rx interrupt while define scale
 	TIMSK1 |= (1 << TOIE1);
 	TCNT1 = 0; // reset timer1
 	TimerOVF_count = 0;
 	DefineScaleMode = 2;  // set up mode "in process"
+	
 	} 
 	
 // if spent 0.2ms time try to get OCR value of new ScaleValue	
 	if (TimerOVF_countFinish == 1)
 		{
 			TimerOVF_countFinish = 0;
+			TimerOVF_count = 0;
 			if ((ScaleValue > 0) && (ScaleValue != ScaleValueChange) && (ScaleValue > ScaleValueChange))
 				{
 					ScaleValueChange = ScaleValue;
@@ -90,12 +93,17 @@ void DefineScale()
 			OCR1A++; // increase PWM signal on optocoupler
 		}
 	
-	if (OCR1A >= 400)
+	if (OCR1A >= 500)
 	{
+		BL_SendStr("defined");
 		BluetoothMessage[0] = 'f'; //disable executing DefineScale function
 		DefineScaleMode = 0;  // reset flag
 		PWM_Init(); // return timer1 setting to default
-		UCSR0B &= ~ (1 << RXCIE0)|(1 << RXEN0);
+		UCSR0B |= (1 << RXCIE0)|(1 << RXEN0);
+		TIMSK1 &= ~(1 << TOIE1);
+		//SEND_OCR1A;
+		BL_SendStr("Bl[0]");
+		BL_SendStr(BluetoothMessage);
 	}
 	
 	
@@ -139,13 +147,15 @@ char* IntToStr(uint16_t n, char *buffer)
 
 char* IntToStrKey(uint16_t val, char *buffer, char key1, char key2)
 {
+	char *str0;
 	char *str1;
 	char *str2;
-	str1 = IntToStr (val, buffer) - 2;
-	str2 = IntToStr (val, buffer) - 1;
-	*str1 = key1;
-	*str2 = key2;
-	return str1;
+	str2 = IntToStr (val, buffer);
+	str0 = str2 - 2;
+	str1 = str2 - 1;
+	*str0 = key1;
+	*str1 = key2;
+	return str0;
 }
 
 void PWM_Init()
@@ -255,6 +265,8 @@ void BL_SetCorrect()
 			OCR1A = 0;
 			OCR2A = 0;
 			ScaleValueDetect = 0;
+			StrOCRptr1 = IntToStrKey(OCR1A, StrOCR1, 'o', ',');
+			StrScaleDetectptr = IntToStrKey(ScaleValueDetect, StrScaleValueDetect, 's', ',');
 		}
 
  }

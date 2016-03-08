@@ -43,7 +43,7 @@ char *StrScaleDetectptr;
 
 
 extern uint8_t DefineScaleMode;
-extern uint8_t TimerOVF_count;
+extern uint16_t TimerOVF_count;
 extern uint8_t TimerOVF_countFinish;
 extern uint8_t DefinedDiscret;
 
