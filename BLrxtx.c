@@ -6,7 +6,6 @@
 #include "Blrxtx.h"
 
 
-
 uint8_t BLtxBuf[SIZE_BUF];
 uint8_t txBufTail = 0;
 uint8_t txBufHead = 0;

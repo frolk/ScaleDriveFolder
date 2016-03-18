@@ -1,6 +1,7 @@
-
+#include "PWM.h"
 #include <avr/io.h>
 #include "BLmsg.h"
+
 
 
 void PWM_Init()
@@ -14,7 +15,7 @@ void PWM_Init()
 
 void PWM_PinValue()
 {
-	OCR2A = PWMvalue;		
+	OCR2A = PWMvalue1;		
 	//PWMvalue = 0;
 	
 }
