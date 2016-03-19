@@ -219,7 +219,12 @@ void BL_DefComd()
 		{
 			PWMvalue1 = atoi(BluetoothMessage + 1);
 			StrPWMvalueptr1 = IntToStrKey(PWMvalue1, StrPWMvalue1, 'p', ',');
+			
 			BL_SendStr(StrPWMvalueptr1);
+			BL_SendStr("StasYouLuck");
+			BL_SendStr(SWrxMessage);
+			BL_SendStr("\n");
+			
 		}
 
 		else if (BluetoothMessage[0] == 'c')
@@ -238,7 +243,7 @@ void BL_DefComd()
 
 void BL_SendMsg()
 {
-	if ((ScaleValue > 0) && (ScaleValue != ScaleValueChange) && (!DefineScaleMode))
+	if ((!DefineScaleMode) && (ScaleValue != ScaleValueChange) && (ScaleValue > 0))
 	{
 		
 		ScaleValueChange = ScaleValue;
@@ -255,7 +260,7 @@ void BL_SendMsg()
 void BL_SetCorrect()
 
 {
-	if (PWMvalue1 && (ScaleValue > 20))
+	if (PWMvalue1 && (ScaleValue > 10))
 	{
 		PWM_PinValue1();   // write gotten correction value from smartphone to OCR2A for change OC2A pin PWM
 		ScaleValueDetect = ScaleValue;

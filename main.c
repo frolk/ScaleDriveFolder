@@ -10,9 +10,10 @@ int main(void)
 	SW_RX_Init();
 	BL_Init(MYUBRR);
 	PWM_Init();
-
+	
 	while (1)
 	{
+					
 		SW_GetScaleValue();
 
 		BL_DefComd();

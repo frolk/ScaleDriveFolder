@@ -12,7 +12,7 @@ static volatile uint8_t SWrxBufTail = 0;
 static volatile uint8_t SWrxBufHead = 0;
 static volatile uint8_t SWnumBit;    // What's number of bit. It's need for delaying
 static volatile uint8_t SWrxCount = 0;// Receive variables
-volatile uint8_t SWrxMessage[18];
+char SWrxMessage[18];
 volatile uint8_t SWrxDataPending;
 volatile uint8_t SWmesIsComplete;
 char SWscaleValueForBL[10];
@@ -26,7 +26,7 @@ void SW_FlushRxBuf()
 	
 }
 
-ISR (INT0_vect)
+ISR (INT1_vect)
 {
 	SWnumBit = 0;
 	DISABLE_EXTERNAL0_INTERRUPT ();		// disable interrupt during the data bits
@@ -71,7 +71,7 @@ ISR (TIMER0_COMPA_vect)
 		{
 			SWrxDataPending = 1;		// Enter data pending when one byte is received
 			DISABLE_TIMER_INTERRUPT();	// Disable this interrupt
-			EIFR |= (1 << INTF0);	// Reset flag not to enter the ISR one extra time
+			EIFR |= (1 << INTF1);	// Reset flag not to enter the ISR one extra time
 			ENABLE_EXTERNAL0_INTERRUPT(); // Enable interrupt to receive more bytes.
 		}
 	 }
@@ -109,6 +109,7 @@ void SW_RX_Fill_Buffer(void)
 			SWrxDataPending = 0;
 			if (SWrxBuf[SWrxBufTail] == 0x0A)
 			{
+
 				SWmesIsComplete = 1;
 			}
 			SWrxBufTail++;

@@ -20,9 +20,9 @@
 #define ENABLE_TIMER_INTERRUPT( )       ( TIMSK0 |= ( 1<< OCIE0A ) )
 #define DISABLE_TIMER_INTERRUPT( )      ( TIMSK0 &= ~( 1<< OCIE0A ) )
 #define CLEAR_TIMER_INTERRUPT( )        ( TIFR0 |= ((1 << OCF0A) ) )
-#define ENABLE_EXTERNAL0_INTERRUPT( )   ( EIMSK|= ( 1<< INT0 ) )
-#define DISABLE_EXTERNAL0_INTERRUPT( )  ( EIMSK &= ~( 1<< INT0 ) )
-#define SW_RX_PIN						PORTD2               //!< Receive data pin, must be INT0
+#define ENABLE_EXTERNAL0_INTERRUPT( )   ( EIMSK|= ( 1<< INT1 ) )
+#define DISABLE_EXTERNAL0_INTERRUPT( )  ( EIMSK &= ~( 1<< INT1 ) )
+#define SW_RX_PIN						PORTD3               //!< Receive data pin, must be INT0
 
 #define GET_RX_PIN()					( PIND & (1 << SW_RX_PIN))
 
@@ -41,7 +41,7 @@ extern void SW_GetScaleValue();
 static volatile unsigned char SW_RX_Data;     //!< Storage for received bits.
 static volatile unsigned char SW_RX_Bit_Count; //!< RX bit counter.
 
-extern volatile uint8_t SWrxMessage[18];
+extern char SWrxMessage[18];
 extern volatile uint8_t SWrxDataPending;
 static volatile uint8_t SWrxBuf[SW_SIZE_BUF];
 static volatile uint8_t SWrxBufTail;
