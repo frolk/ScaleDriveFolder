@@ -242,6 +242,11 @@ void BL_DefComd()
 			BL_SendStr("d-ok");
 			break;
 			
+			case 1: BL_PutOneByte(TCCR2A); break;
+			case 15: BL_PutOneByte(TCCR1A); break;
+			case 25: BL_PutOneByte(DDRC); break;
+			case 21: BL_PutOneByte(TIFR0); break;
+			
 			case 'c':
 			BL_SendStr("d-ok");
 			if (DefineScaleMode == 0)

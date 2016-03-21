@@ -25,6 +25,7 @@ extern char BlrxChar;
 
 
 
+
 extern void BL_Init(uint16_t ubrr); // initiate fast PWM mode for changing OCnX voltage value
 
 extern void BL_FlushRxBuf(void); // flush rx buffer: head, tail, count = 0
@@ -36,6 +37,8 @@ void BL_FlushTxBuf(void); // flush tx buffer: head, tail, count = 0
 void BL_PutChar(char sym); // put one symbol into buffer using txhead pointer
 
 extern void BL_SendStr(char *data); // send string starting from data address
+
+extern void BL_PutOneByte(uint8_t value);
 
 #endif
 

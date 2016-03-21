@@ -21,6 +21,8 @@ uint8_t BLmesIsComplete;
 char BlrxChar = '\0';
 uint8_t BLlongMsg = 0;
 
+
+
 ISR (USART_RX_vect)   // receive interrupt routine
 {
 	BlrxChar = UDR0;
@@ -91,6 +93,12 @@ void BL_PutChar(char sym)// write next symbol into ring buffer
 		}
 	}
 }
+
+void BL_PutOneByte(uint8_t value)
+{
+	if ((UCSR0A & (1<<UDRE0)) != 0) UDR0 = value;
+}
+
 
 void BL_SendStr(char *data)// send string start from the first member with address pointed by *data
 {
