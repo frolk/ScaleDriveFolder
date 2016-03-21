@@ -23,6 +23,8 @@ extern uint8_t txBufHead;
 extern uint8_t txCount;
 extern char BlrxChar;
 extern uint8_t BLlongMsg;
+extern char BLFewBytes[2];
+extern uint8_t TwoByteMode;
 
 
 

@@ -20,6 +20,8 @@ uint8_t rxCount = 0;// Receive variables
 uint8_t BLmesIsComplete;
 char BlrxChar = '\0';
 uint8_t BLlongMsg = 0;
+uint8_t TwoByteMode = 0;
+char BLFewBytes[2];
 
 
 
@@ -94,6 +96,7 @@ void BL_PutChar(char sym)// write next symbol into ring buffer
 	}
 }
 
+
 void BL_PutOneByte(uint8_t value)
 {
 	if ((UCSR0A & (1<<UDRE0)) != 0) UDR0 = value;
@@ -108,7 +111,7 @@ void BL_SendStr(char *data)// send string start from the first member with addre
 		sym = *data++; // write consisting value of data into sym local variable
 		BL_PutChar(sym); // call function of putting every value into the ring buffer 
 	}
-	if (*data == '\0')
+	if ((*data == '\0') && (TwoByteMode == 0))
 	{
 		BL_PutChar(',');
 	}

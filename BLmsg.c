@@ -169,7 +169,7 @@ void PWM_Init()
 	/* Timer1 for kg correction */
 	TCCR1A = (1 << COM1A1) | (1 << WGM11) | (1 << WGM10);
 	TCCR1B = (1 << WGM12) | (1 << CS10);
-	OCR1A = 0x0000;
+	OCR1A = 0xBBBB;
 }
 
 void PWM_PinValue1()
@@ -207,8 +207,6 @@ void BL_GetMessage() // getting value from ring buffer to BlutoothMessage array
 	
 }
 
-
-
 void BL_DefComd()
 {
 	if (BLmesIsComplete == 1)
@@ -230,6 +228,7 @@ void BL_DefComd()
 	
 	if ((BlrxChar) && (BLmesIsComplete == 0) && (BLlongMsg == 0))
 	{
+		
 		switch (BlrxChar)
 		{
 			case 'w': 
@@ -272,10 +271,15 @@ void BL_DefComd()
 			case 25: BL_PutOneByte(MCUSR); break;
 			case 26: BL_PutOneByte(OCR0A); break;
 			case 27: BL_PutOneByte(OCR0B); break;
-			case 28: BL_PutOneByte(OCR1AH); break;
-			case 29: BL_PutOneByte(OCR1AL); break;
-			case 30: BL_PutOneByte(OCR1BH); break;
-			case 31: BL_PutOneByte(OCR1BL); break;
+			
+			case 28: 
+			TwoByteMode = 1;
+			BLFewBytes[0] = OCR1AH;
+			BLFewBytes[1] = OCR1AL;
+			BL_SendStr(BLFewBytes);
+			TwoByteMode = 0;
+						
+			
 			case 32: BL_PutOneByte(OCR2A); break;
 			case 33: BL_PutOneByte(OCR2B); break;
 			case 34: BL_PutOneByte(OSCCAL); break;
