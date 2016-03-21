@@ -22,7 +22,7 @@ extern uint8_t txBufTail;
 extern uint8_t txBufHead;
 extern uint8_t txCount;
 extern char BlrxChar;
-
+extern uint8_t BLlongMsg;
 
 
 

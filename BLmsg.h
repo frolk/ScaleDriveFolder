@@ -2,6 +2,9 @@
 #ifndef BLdefComd_H_
 #define BLdefComd_H_
 
+		
+					
+					
 
 extern uint16_t PWMvalue1;
 extern uint16_t PWMvalue2;
