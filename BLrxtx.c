@@ -20,8 +20,8 @@ uint8_t rxCount = 0;// Receive variables
 uint8_t BLmesIsComplete;
 char BlrxChar = '\0';
 uint8_t BLlongMsg = 0;
-uint8_t TwoByteMode = 0;
-char BLFewBytes[2];
+//uint8_t TwoByteMode = 0;
+//char BLFewBytes[2];
 
 
 
@@ -111,11 +111,12 @@ void BL_SendStr(char *data)// send string start from the first member with addre
 		sym = *data++; // write consisting value of data into sym local variable
 		BL_PutChar(sym); // call function of putting every value into the ring buffer 
 	}
-	if ((*data == '\0') && (TwoByteMode == 0))
+	if (*data == '\0') // & (TwoByteMode == 0))
 	{
 		BL_PutChar(',');
 	}
 }
+
 
 void BL_FlushRxBuf(void)  // flush our ring buffer after getting all of the array's member in out CurrentValue variable
 {
@@ -124,6 +125,14 @@ void BL_FlushRxBuf(void)  // flush our ring buffer after getting all of the arra
 	rxCount = 0;
 	BLlongMsg = 0;
 }
+
+void BL_FlushTxBuf(void)
+{
+	txBufTail = 0;
+	txBufHead = 0;
+	txCount = 0;
+}
+
 
 uint8_t BL_GetChar(void) // take one symbol from buffer using the Head pointer
 {
