@@ -5,14 +5,22 @@
 #include "BLrxtx.h"
 #include "BLmsg.h"
 
+void WaitSketch()
+{
+	DDRC |= (1 << PORTC2);
+	PORTC |= (1 << PORTC2);
+}
+
 int main(void)
 {
 	SW_RX_Init();
 	BL_Init(MYUBRR);
 	PWM_Init();
+	WaitSketch();
 	
 	while (1)
 	{
+		
 					
 		SW_GetScaleValue();
 

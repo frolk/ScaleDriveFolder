@@ -221,11 +221,14 @@ void BL_DefComd()
 			StrPWMvalueptr1 = IntToStrKey(PWMvalue1, StrPWMvalue1, 'p', ',');
 			
 			BL_SendStr(StrPWMvalueptr1);
-			BL_SendStr("StasYouLuck");
-			BL_SendStr(SWrxMessage);
-			BL_SendStr("\n");
 			
 		}
+		
+		else if ((BluetoothMessage[0] == 0x30) && (BluetoothMessage[1] == 0x20) && (BluetoothMessage[2] == 0x30) && (BluetoothMessage[3] == 0x20)) // Reset MCU before starting firmware
+		{
+			PORTC &= ~(1 << PORTC2);   // this pin connected to RST through 220 Ohm
+		}
+		
 
 		else if (BluetoothMessage[0] == 'c')
 		{
@@ -235,6 +238,16 @@ void BL_DefComd()
 			}
 			DefineScale();
 		}
+		else if (BluetoothMessage[0] == 'd')
+		{
+			 BL_SendStr("d-ok");
+		}
+		else if (BluetoothMessage[0] == 'w')
+		{
+			BL_SendStr("w-ok");
+		}
+		
+			
 
 
 		BLmesIsComplete = 0;  // reset flag "complete message from smartphone"
@@ -243,18 +256,24 @@ void BL_DefComd()
 
 void BL_SendMsg()
 {
-	if ((!DefineScaleMode) && (ScaleValue != ScaleValueChange) && (ScaleValue > 0))
+	if ((!DefineScaleMode) && (ScaleValue != ScaleValueChange) && (ScaleValue > 0) && (DebugAsk = 0))
 	{
-		
 		ScaleValueChange = ScaleValue;
-		StrScaleDetectptr = IntToStrKey(ScaleValueDetect, StrScaleValueDetect, 's', ',');
 		BL_SendStr(SWscaleValueForBL);
+	}
+		
+	else if ((!DefineScaleMode) && (ScaleValue != ScaleValueChange) && (ScaleValue > 0) && (DebugAsk = 1))	
+		{
+		ScaleValueChange = ScaleValue;
+		BL_SendStr(SWscaleValueForBL);
+		StrScaleDetectptr = IntToStrKey(ScaleValueDetect, StrScaleValueDetect, 's', ',');
+		
 		BL_SendStr(StrScaleDetectptr);
 		BL_SendStr(StrOCRptr1);
 		BL_SendStr(StrOCRptr2);
 		BL_SendStr(StrPWMvalueptr1);
 		BL_SendStr("\n\r");
-	}
+		}
 }
 
 void BL_SetCorrect()

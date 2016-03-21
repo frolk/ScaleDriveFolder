@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "Blrxtx.h"
+#include "BLmsg.h"
 
 
 uint8_t BLtxBuf[SIZE_BUF];
@@ -35,7 +36,19 @@ ISR (USART_RX_vect)   // receive interrupt routine
 		
 		else if (BLrxBuf[rxBufTail] == 'd')
 		{
-			DebugAsk = 1;	
+			DebugAsk = 1;
+			BLmesIsComplete = 1;	
+		}
+		
+		else if (BLrxBuf[rxBufTail] == 'w')
+		{
+			DebugAsk = 0;
+			BLmesIsComplete = 1;
+		}
+		
+		else if ((BLrxBuf[rxBufTail] == 0x20) && (rxBufTail >= 3))
+		{
+			BLmesIsComplete = 1;
 		}
 				
 		else
@@ -74,6 +87,7 @@ void BL_Init(uint16_t ubrr) // initialize UART
 	
 	//enable transmission and reception 0x78
 	UCSR0B |= (1<<RXCIE0)|(1<<TXCIE0)|(1<<RXEN0)|(1<<TXEN0);
+	
 	sei();
 }
 
