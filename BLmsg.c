@@ -204,53 +204,54 @@ void BL_GetMessage() // getting value from ring buffer to BlutoothMessage array
 	{
 		BluetoothMessage[i] = BL_GetChar();
 	}
-	BL_FlushRxBuf();  // flush our buffer and start from the beginning
-
+	
 }
 
 
 
 void BL_DefComd()
 {
-	if (BLmesIsComplete)
+	if (BLmesIsComplete == 1)
 	{
-		BL_GetMessage(); //pulling up buffer's data one by one
-		if ((BluetoothMessage[0] == '-') | (BluetoothMessage[0] == '+'))
+		BL_GetMessage();
+		if ((BluetoothMessage[1] == '-') | (BluetoothMessage[1] == '+'))
 		{
-			PWMvalue1 = atoi(BluetoothMessage + 1);
+			PWMvalue1 = atoi(BluetoothMessage + 2);
 			StrPWMvalueptr1 = IntToStrKey(PWMvalue1, StrPWMvalue1, 'p', ',');
-			
 			BL_SendStr(StrPWMvalueptr1);
-			
 		}
-		
-		else if ((BluetoothMessage[0] == 0x30) && (BluetoothMessage[1] == 0x20) && (BluetoothMessage[2] == 0x30) && (BluetoothMessage[3] == 0x20)) // Reset MCU before starting firmware
+		else if ((BluetoothMessage[0] == '!') && (BluetoothMessage[1] == 0x30) && (BluetoothMessage[2] == 0x20) && (BluetoothMessage[3] == 0x30) && (BluetoothMessage[4] == 0x20)) // Reset MCU before starting firmware
 		{
 			PORTC &= ~(1 << PORTC2);   // this pin connected to RST through 220 Ohm
 		}
-		
-
-		else if (BluetoothMessage[0] == 'c')
+		BLmesIsComplete = 0;  // reset flag "complete message from smartphone"
+		BL_FlushRxBuf();  // flush our buffer and start from the beginning
+	}
+	
+	if ((BlrxChar) && (BLmesIsComplete == 0))
+	{
+		switch (BlrxChar)
 		{
+			case 'w': 
+			DebugAsk = 0;
+			BL_SendStr("w-ok");
+			break;
+			 
+			case 'd':
+			DebugAsk = 1;
+			BL_SendStr("d-ok");
+			break;
+			
+			case 'c':
+			BL_SendStr("d-ok");
 			if (DefineScaleMode == 0)
 			{
-				DefineScaleMode = 1;  // first timer we entry into this function
+				DefineScaleMode = 1;  // first time we entry into this function
+				DefineScale();
 			}
-			DefineScale();
+			break;
 		}
-		else if (BluetoothMessage[0] == 'd')
-		{
-			 BL_SendStr("d-ok");
-		}
-		else if (BluetoothMessage[0] == 'w')
-		{
-			BL_SendStr("w-ok");
-		}
-		
-			
-
-
-		BLmesIsComplete = 0;  // reset flag "complete message from smartphone"
+		BlrxChar = '\0';
 	}
 }
 

@@ -18,44 +18,26 @@ uint8_t rxBufTail = 0;
 uint8_t rxBufHead = 0;
 uint8_t rxCount = 0;// Receive variables
 uint8_t BLmesIsComplete;
+char BlrxChar = '\0';
+uint8_t BLlongMsg = 0;
 
 ISR (USART_RX_vect)   // receive interrupt routine
 {
-	if(rxCount < SIZE_BUF)
+	BlrxChar = UDR0;
+	
+	if((BlrxChar == '/')||(BlrxChar == '!'))
 	{
-		BLrxBuf[rxBufTail] = UDR0;
-		
-		
-				
-		if(BLrxBuf[rxBufTail] == 0x26)// if '&'
-		//if(rxBufTail>1)
-		{	
-			PORTB |= (1<< PORTB5);
-			BLmesIsComplete = 1;
-		}
-		
-		else if (BLrxBuf[rxBufTail] == 'd')
-		{
-			DebugAsk = 1;
-			BLmesIsComplete = 1;	
-		}
-		
-		else if (BLrxBuf[rxBufTail] == 'w')
-		{
-			DebugAsk = 0;
-			BLmesIsComplete = 1;
-		}
-		
-		else if ((BLrxBuf[rxBufTail] == 0x20) && (rxBufTail >= 3))
-		{
-			BLmesIsComplete = 1;
-		}
-				
-		else
-		{
-			PORTB &= ~(1 << PORTB5);
-		}
-		
+		BLlongMsg = 1;
+	}
+	
+	if((BlrxChar == 0x26) || ((BlrxChar == 0x20) && (rxBufTail >= 3))) 
+	{
+		BLmesIsComplete = 1;
+	}
+	
+	if ((rxCount < SIZE_BUF) && (BLlongMsg == 1))
+	{
+		BLrxBuf[rxBufTail] = BlrxChar;
 		rxBufTail++;
 		if(rxBufTail == SIZE_BUF) rxBufTail = 0;
 		rxCount++;
@@ -129,6 +111,7 @@ void BL_FlushRxBuf(void)  // flush our ring buffer after getting all of the arra
 	rxBufTail = 0;
 	rxBufHead = 0;
 	rxCount = 0;
+	BLlongMsg = 0;
 }
 
 uint8_t BL_GetChar(void) // take one symbol from buffer using the Head pointer

@@ -21,6 +21,7 @@ extern uint8_t BLtxBuf[SIZE_BUF];
 extern uint8_t txBufTail;
 extern uint8_t txBufHead;
 extern uint8_t txCount;
+extern char BlrxChar;
 
 
 
