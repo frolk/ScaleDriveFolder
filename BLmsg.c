@@ -211,7 +211,7 @@ void BL_DefComd()
 	if (BLmesIsComplete == 1)
 	{
 		BL_GetMessage();
-		if (BluetoothMessage[1] == '+')
+		if ((BluetoothMessage[0] == '$') && (BluetoothMessage[1] == '+'))
 		{
 			PORTB |= (1 << PORTB4);
 			PWMvalue1 = atoi(BluetoothMessage + 2);
@@ -219,12 +219,11 @@ void BL_DefComd()
 			BL_SendStr("+");
 			BL_SendStr(StrPWMvalueptr1);
 		}
-		if (BluetoothMessage[1] == '-') 
+		else if ((BluetoothMessage[0] == '$') && (BluetoothMessage[1] == '-'))
 		{
 			PORTB &= ~ (1 << PORTB4);
 			PWMvalue1 = atoi(BluetoothMessage + 2);
 			StrPWMvalueptr1 = IntToStrKey(PWMvalue1, StrPWMvalue1, 'p', ',');
-			//BL_SendStr('-');
 			BL_SendStr("-");
 			BL_SendStr(StrPWMvalueptr1);
 			
@@ -234,89 +233,80 @@ void BL_DefComd()
 		{
 			PORTC &= ~(1 << PORTC2);   // this pin connected to RST through 220 Ohm
 		}
-		BLmesIsComplete = 0;  // reset flag "complete message from smartphone"
-		BL_FlushRxBuf();  // flush our buffer and start from the beginning
-	}
-	
-	if ((BlrxChar) && (BLmesIsComplete == 0) && (BLlongMsg == 0))
-	{
 		
-		switch (BlrxChar)
+		
+			
+		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == 'c'))
 		{
-			case 'w': 
-			DebugAsk = 0;
 			BL_SendStr("ok");
-			break;
-			 
-			case 'd':
-			DebugAsk = 1;
-			BL_SendStr("ok");
-			break;
 			
-			case 1: BL_PutOneByte(DDRB); break;
-			case 2: BL_PutOneByte(DDRC); break;
-			case 3: BL_PutOneByte(DDRD); break;
-			case 4: BL_PutOneByte(EIFR); break;
-			case 5: BL_PutOneByte(EIMSK); break;
-			case 6: BL_PutOneByte(OCR0A); break;
-			case 7: BL_PutOneByte(OCR0B); break;
-			case 8: BL_PutOneByte(OCR1AH); break;
-			case 9: BL_PutOneByte(OCR1AL); break;			
-			case 10: BL_PutOneByte(OCR2A); break;
-			case 11: BL_PutOneByte(OCR2B); break;
-			case 12: BL_PutOneByte(OSCCAL); break;
-			case 13: BL_PutOneByte(PORTB); break;
-			case 14: BL_PutOneByte(PORTC); break;
-			case 15: BL_PutOneByte(PORTD); break;
-			case 16: BL_PutOneByte(TCCR0A); break;
-			case 17: BL_PutOneByte(TCCR0B); break;
-			case 18: BL_PutOneByte(TCCR1A); break;
-			case 19: BL_PutOneByte(TCCR1B); break;
-			case 20: BL_PutOneByte(TCCR1C); break;
-			case 21: BL_PutOneByte(TCCR2A); break;
-			case 22: BL_PutOneByte(TCCR2B); break;
-			case 23: BL_PutOneByte(TCNT0); break;
-			case 24: BL_PutOneByte(TCNT1H); break;
-			case 25: BL_PutOneByte(TCNT1L); break;
-			case 26: BL_PutOneByte(TCNT2); break;
-			case 27: BL_PutOneByte(TIFR0); break;
-			case 28: BL_PutOneByte(TIFR1); break;
-			case 29: BL_PutOneByte(TIFR2); break;
-			case 30: BL_PutOneByte(TIMSK0); break;
-			case 31: BL_PutOneByte(TIMSK1); break;
-			case 32: BL_PutOneByte(TIMSK2); break;
-			case 33: BL_PutOneByte(UBRR0H); break;
-			case 34: BL_PutOneByte(UBRR0L); break;
-			case 35: BL_PutOneByte(UCSR0A); break;
-			case 36: BL_PutOneByte(UCSR0B); break;
-			case 37: BL_PutOneByte(UCSR0C); break;
-			case 38: BL_PutOneByte(UDR0); break;
-			case 39: BL_PutOneByte(WDTCSR); break;  // Send Registers
-			case 40: BL_PutOneByte(WDTCSR); break;
-			case 41: BL_PutOneByte(0x11); break;
-			case 42: BL_PutOneByte(0x22); break;
-			case 43: BL_PutOneByte(0x33); break;
-			case 44: BL_PutOneByte(0x33); break;
-			case 45: BL_PutOneByte(0x44); break;
-			case 46: BL_PutOneByte(0x55); break;
-			//case 47
-			
-			
-			//case 48: BL_PutOneByte(0x57); break;
-			//case 49: BL_PutOneByte(0x58); break;
-			//case 50: BL_PutOneByte(0x59); break;
-			
-			case 'c':
-			BL_SendStr("ok");
 			if (DefineScaleMode == 0)
 			{
 				DefineScaleMode = 1;  // first time we entry into this function
 				DefineScale();
 			}
-			break;
 		}
-		BlrxChar = '\0';
-	}
+			
+		else if (BluetoothMessage[0] == 'r')
+		{
+		
+				switch (BluetoothMessage[1])
+				{
+					case 1: BL_PutOneByte(DDRB); break;
+					case 2: BL_PutOneByte(DDRC); break;
+					case 3: BL_PutOneByte(DDRD); break;
+					case 4: BL_PutOneByte(EIFR); break;
+					case 5: BL_PutOneByte(EIMSK); break;
+					case 6: BL_PutOneByte(OCR0A); break;
+					case 7: BL_PutOneByte(OCR0B); break;
+					case 8: BL_PutOneByte(OCR1AH); break;
+					case 9: BL_PutOneByte(OCR1AL); break;			
+					case 10: BL_PutOneByte(OCR2A); break;
+					case 11: BL_PutOneByte(OCR2B); break;
+					case 12: BL_PutOneByte(OSCCAL); break;
+					case 13: BL_PutOneByte(PORTB); break;
+					case 14: BL_PutOneByte(PORTC); break;
+					case 15: BL_PutOneByte(PORTD); break;
+					case 16: BL_PutOneByte(TCCR0A); break;
+					case 17: BL_PutOneByte(TCCR0B); break;
+					case 18: BL_PutOneByte(TCCR1A); break;
+					case 19: BL_PutOneByte(TCCR1B); break;
+					case 20: BL_PutOneByte(TCCR1C); break;
+					case 21: BL_PutOneByte(TCCR2A); break;
+					case 22: BL_PutOneByte(TCCR2B); break;
+					case 23: BL_PutOneByte(TCNT0); break;
+					case 24: BL_PutOneByte(TCNT1H); break;
+					case 25: BL_PutOneByte(TCNT1L); break;
+					case 26: BL_PutOneByte(TCNT2); break;
+					case 27: BL_PutOneByte(TIFR0); break;
+					case 28: BL_PutOneByte(TIFR1); break;
+					case 29: BL_PutOneByte(TIFR2); break;
+					case 30: BL_PutOneByte(TIMSK0); break;
+					case 31: BL_PutOneByte(TIMSK1); break;
+					case 32: BL_PutOneByte(TIMSK2); break;
+					case 33: BL_PutOneByte(UBRR0H); break;
+					case 34: BL_PutOneByte(UBRR0L); break;
+					case 35: BL_PutOneByte(UCSR0A); break;
+					case 36: BL_PutOneByte(UCSR0B); break;
+					case 37: BL_PutOneByte(UCSR0C); break;
+					case 38: BL_PutOneByte(UDR0); break;
+					case 39: BL_PutOneByte(WDTCSR); break;  // Send Registers
+					case 40: BL_PutOneByte(WDTCSR); break;
+					case 41: BL_PutOneByte(0x11); break;
+					case 42: BL_PutOneByte(0x22); break;
+					case 43: BL_PutOneByte(0x33); break;
+					case 44: BL_PutOneByte(0x33); break;
+					case 45: BL_PutOneByte(0x44); break;
+					case 46: BL_PutOneByte(0x55); break;
+					default: BL_SendStr("There are not");
+
+				}
+				
+		
+		}
+	BLmesIsComplete = 0;  // reset flag "complete message from smartphone"
+	BL_FlushRxBuf();  // flush our buffer and start from the beginning
+}
 }
 
 void BL_SendMsg()

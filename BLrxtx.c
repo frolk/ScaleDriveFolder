@@ -29,17 +29,13 @@ ISR (USART_RX_vect)   // receive interrupt routine
 {
 	BlrxChar = UDR0;
 	
-	if((BlrxChar == '$')||(BlrxChar == '!'))
-	{
-		BLlongMsg = 1;
-	}
-	
+		
 	if((BlrxChar == 0x26) || ((BlrxChar == 0x20) && (rxBufTail >= 3))) 
 	{
 		BLmesIsComplete = 1;
 	}
 	
-	if ((rxCount < SIZE_BUF) && (BLlongMsg == 1))
+	if (rxCount < SIZE_BUF)
 	{
 	
 		BLrxBuf[rxBufTail] = BlrxChar;
@@ -124,7 +120,6 @@ void BL_FlushRxBuf(void)  // flush our ring buffer after getting all of the arra
 	rxBufTail = 0;
 	rxBufHead = 0;
 	rxCount = 0;
-	BLlongMsg = 0;
 }
 
 void BL_FlushTxBuf(void)
