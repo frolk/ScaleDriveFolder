@@ -29,7 +29,7 @@ ISR (USART_RX_vect)   // receive interrupt routine
 {
 	BlrxChar = UDR0;
 	
-	if((BlrxChar == '/')||(BlrxChar == '!'))
+	if((BlrxChar == '$')||(BlrxChar == '!'))
 	{
 		BLlongMsg = 1;
 	}
@@ -41,6 +41,7 @@ ISR (USART_RX_vect)   // receive interrupt routine
 	
 	if ((rxCount < SIZE_BUF) && (BLlongMsg == 1))
 	{
+	
 		BLrxBuf[rxBufTail] = BlrxChar;
 		rxBufTail++;
 		if(rxBufTail == SIZE_BUF) rxBufTail = 0;

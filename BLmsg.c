@@ -159,7 +159,8 @@ char* IntToStrKey(uint16_t val, char *buffer, char key1, char key2)
 
 void PWM_Init()
 {
-	DDRB = (1 << PORTB1) | (1 << PORTB3) | (1 << PORTB5);// OC1A, OC2A and ledPin like OUTPUT
+	DDRB |= (1 << PORTB1) | (1 << PORTB3) | (1 << PORTB4) | (1 << PORTB5);// OC1A, OC2A and ledPin like OUTPUT
+	PORTB |= (1 << PORTB4);
 	/* Timer2 for % correction */
 	TCCR2A = (1 << WGM21) | (1 << WGM20) | (1 << COM2A1); // FastPWM mode for Timer2
 	TCCR2B = (1 << CS20); // Start Timer2 with prescaler 1
@@ -210,12 +211,25 @@ void BL_DefComd()
 	if (BLmesIsComplete == 1)
 	{
 		BL_GetMessage();
-		if ((BluetoothMessage[1] == '-') | (BluetoothMessage[1] == '+'))
+		if (BluetoothMessage[1] == '+')
 		{
+			PORTB |= (1 << PORTB4);
 			PWMvalue1 = atoi(BluetoothMessage + 2);
 			StrPWMvalueptr1 = IntToStrKey(PWMvalue1, StrPWMvalue1, 'p', ',');
+			BL_SendStr("+");
 			BL_SendStr(StrPWMvalueptr1);
 		}
+		if (BluetoothMessage[1] == '-') 
+		{
+			PORTB &= ~ (1 << PORTB4);
+			PWMvalue1 = atoi(BluetoothMessage + 2);
+			StrPWMvalueptr1 = IntToStrKey(PWMvalue1, StrPWMvalue1, 'p', ',');
+			//BL_SendStr('-');
+			BL_SendStr("-");
+			BL_SendStr(StrPWMvalueptr1);
+			
+		}
+		
 		else if ((BluetoothMessage[0] == '!') && (BluetoothMessage[1] == 0x30) && (BluetoothMessage[2] == 0x20) && (BluetoothMessage[3] == 0x30) && (BluetoothMessage[4] == 0x20)) // Reset MCU before starting firmware
 		{
 			PORTC &= ~(1 << PORTC2);   // this pin connected to RST through 220 Ohm
@@ -231,12 +245,12 @@ void BL_DefComd()
 		{
 			case 'w': 
 			DebugAsk = 0;
-			BL_SendStr("w-ok");
+			BL_SendStr("ok");
 			break;
 			 
 			case 'd':
 			DebugAsk = 1;
-			BL_SendStr("d-ok");
+			BL_SendStr("ok");
 			break;
 			
 			case 1: BL_PutOneByte(DDRB); break;
@@ -278,9 +292,22 @@ void BL_DefComd()
 			case 37: BL_PutOneByte(UCSR0C); break;
 			case 38: BL_PutOneByte(UDR0); break;
 			case 39: BL_PutOneByte(WDTCSR); break;  // Send Registers
+			case 40: BL_PutOneByte(WDTCSR); break;
+			case 41: BL_PutOneByte(0x11); break;
+			case 42: BL_PutOneByte(0x22); break;
+			case 43: BL_PutOneByte(0x33); break;
+			case 44: BL_PutOneByte(0x33); break;
+			case 45: BL_PutOneByte(0x44); break;
+			case 46: BL_PutOneByte(0x55); break;
+			//case 47
+			
+			
+			//case 48: BL_PutOneByte(0x57); break;
+			//case 49: BL_PutOneByte(0x58); break;
+			//case 50: BL_PutOneByte(0x59); break;
 			
 			case 'c':
-			BL_SendStr("d-ok");
+			BL_SendStr("ok");
 			if (DefineScaleMode == 0)
 			{
 				DefineScaleMode = 1;  // first time we entry into this function
