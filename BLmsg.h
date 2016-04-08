@@ -3,6 +3,9 @@
 #define BLdefComd_H_
 
 
+#define RESET PORTC &= ~(1 << PORTC3)
+
+
 extern uint16_t PWMvalue1;
 extern uint16_t PWMvalue2;
 
@@ -11,6 +14,8 @@ extern void BL_DefComd();  // define bluetooth command
 extern void PWM_Init();
 
 extern void DefineScale();
+
+extern void BL_SetCorrect();
 
 void BL_GetMessage();
 

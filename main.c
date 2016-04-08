@@ -7,14 +7,17 @@
 
 void WaitSketch()
 {
-	DDRC |= (1 << PORTC2);
-	PORTC |= (1 << PORTC2);
+	DDRC |= (1 << PORTC0)|(1 << PORTC1)|(1 << PORTC2)|(1 << PORTC3);
+	//DDRD |= (1 << PORTD7);
+	//PORTD &= ~( 1 << PORTD7);
+	PORTC |= (1 << PORTC3);
 }
 
 int main(void)
 {
 	SW_RX_Init();
-	BL_Init(MYUBRR);
+	//BL_Init(MYUBRR);
+	BL_Init();
 	PWM_Init();
 	WaitSketch();
 

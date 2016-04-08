@@ -3,10 +3,6 @@
 #define BLrxtx_H_
 
 #include <avr/io.h>
-
-#define FOSC 16000000 /* Clock Speed */
-#define BAUD 57600
-#define MYUBRR FOSC/16/BAUD-1
 #define SIZE_BUF 32
 
 extern uint8_t BLmesIsComplete;
@@ -28,7 +24,8 @@ extern uint8_t BLlongMsg;
 
 
 
-extern void BL_Init(uint16_t ubrr); // initiate fast PWM mode for changing OCnX voltage value
+//extern void BL_Init(uint16_t ubrr); // initiate fast PWM mode for changing OCnX voltage value
+extern void BL_Init(void); 
 
 extern void BL_FlushRxBuf(void); // flush rx buffer: head, tail, count = 0
 

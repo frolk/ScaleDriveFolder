@@ -11,8 +11,8 @@
 #define SW_SIZE_BUF 18
 
 #ifdef  BR_9600
-#define TICKSFIRST          103  //!< Ticks between two bits.
-#define TICKS2WAITONE       208  //!< Wait one bit period.
+#define TICKSFIRST          51  //!< Ticks between two bits.
+#define TICKS2WAITONE       103  //!< Wait one bit period.
 #endif
 
 #define INTERRUPT_EXEC_CYCL   9

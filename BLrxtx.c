@@ -58,12 +58,15 @@ ISR (USART_TX_vect)   // transmit interrupt routine
 	}
 }
 
-void BL_Init(uint16_t ubrr) // initialize UART
+void BL_Init(void) // initialize UART
 {
 	
-	//set baud rate = 9600bps
-	UBRR0H = (uint8_t)(ubrr>>8);
-	UBRR0L = (uint8_t)ubrr;
+	//set baud rate = 57600bps for 8MHz
+	UBRR0H = 0x00;
+	UBRR0L = 0x10;
+	
+	UCSR0A |= (1 << U2X0);
+	//UCSR0A &= ~ (1 << U2X0);
 	
 	//set 1 stop bit, no parity bit and 8 bit character size
 	UCSR0C = 0x06;  // (1<<UCSZ01)|(1<<UCSZ00)
@@ -73,6 +76,7 @@ void BL_Init(uint16_t ubrr) // initialize UART
 	
 	sei();
 }
+
 
 void BL_PutChar(char sym)// write next symbol into ring buffer
 {
