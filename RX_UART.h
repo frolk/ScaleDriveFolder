@@ -8,7 +8,7 @@
 
 // baudrate
 #define BR_9600
-#define SW_SIZE_BUF 18
+#define SW_SIZE_BUF 25
 
 #ifdef  BR_9600
 #define TICKSFIRST          51  //!< Ticks between two bits.
@@ -41,16 +41,16 @@ extern void SW_GetScaleValue();
 static volatile unsigned char SW_RX_Data;     //!< Storage for received bits.
 static volatile unsigned char SW_RX_Bit_Count; //!< RX bit counter.
 
-extern char SWrxMessage[18];
+extern char SWrxMessage[25];
 extern volatile uint8_t SWrxDataPending;
 static volatile uint8_t SWrxBuf[SW_SIZE_BUF];
 static volatile uint8_t SWrxBufTail;
 static volatile uint8_t SWrxBufHead;
 static volatile uint8_t SWrxCount;// Receive variables
 extern volatile uint8_t SWmesIsComplete;
-extern char SWscaleValueForBL[10];
+extern char SWscaleValueForBL[16];
 extern volatile float ScaleValue;
-//extern volatile float ScaleValue;
+
 
 
 #endif /* RX_UART_H_ */

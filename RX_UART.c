@@ -12,11 +12,11 @@ static volatile uint8_t SWrxBufTail = 0;
 static volatile uint8_t SWrxBufHead = 0;
 static volatile uint8_t SWnumBit;    // What's number of bit. It's need for delaying
 static volatile uint8_t SWrxCount = 0;// Receive variables
-char SWrxMessage[18];
+char SWrxMessage[25];
 volatile uint8_t SWrxDataPending;
 volatile uint8_t SWmesIsComplete;
-char SWscaleValueForBL[10];
-volatile float ScaleValue;
+char SWscaleValueForBL[16];
+volatile float ScaleValue = 0;
 
 void SW_FlushRxBuf()
 {
@@ -140,13 +140,13 @@ void SW_GetMessage(void)
 {
 	uint8_t j;
 	uint8_t i;
-	for (i=0, j=2; i<18; i++)
+	for (i=0, j=2; i<25; i++)
 	{
 		char SWvalue = SW_GetChar();
 		SWrxMessage[i] = SWvalue;
 		SWscaleValueForBL[0] = 'v';
 		SWscaleValueForBL[1] = ',';
-		if ( (i>6) && (i<14) && (SWrxMessage[i] != ' '))
+		if ( (i>5) && (i<14) && (SWrxMessage[i] != ' ')) // for gs7516
 			{
 				SWscaleValueForBL[j] = SWvalue;
 				j++;
@@ -155,6 +155,8 @@ void SW_GetMessage(void)
 		{
 			SWscaleValueForBL[j] = 0x0D;
 		}
+		//if ( (i>5) && (i<14) && (SWrxMessage[i] != ' ')) // for gs7516
+		//if ( (i>8) && (i<18) && (SWrxMessage[i] != ' ')) // for ci-5010
 	}
 }
 

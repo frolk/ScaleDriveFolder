@@ -3,13 +3,10 @@
 #include "BLmsg.h"
 #include "BLrxtx.h"
 #include "RX_UART.h"
+#include <avr/eeprom.h>
 #include <avr/interrupt.h>
 
-
-#define	SEND_OCR1A		StrOCRptr1 = IntToStrKey(OCR1A, StrOCR1, 'o', ',');\
-						BL_SendStr(StrOCRptr1);
-
-char BluetoothMessage[10];
+char BluetoothMessage[16];
 float DiscretValue;
 
 //Parameters for sending via BL
@@ -23,7 +20,7 @@ char StrPWMvalue2[7];
 
 uint32_t ScaleNPV;
 
-float ScaleValueChange;
+float ScaleValueChange = 0;
 uint16_t ScaleValueDetect;
 char StrScaleValueDetect[7];
 char StrOCR1[7];
@@ -36,77 +33,31 @@ uint8_t PWMValueChanged1 = 0;
 uint8_t PWMValueChanged2 = 0;
 
 uint8_t DefineScaleMode = 0;
+uint8_t DefineKG = 0;
+uint8_t DefinePercent = 0;
 uint16_t TimerOVF_count;
 uint8_t TimerOVF_countFinish = 0;
 uint8_t DefinedDiscret = 0; // variables
+uint8_t ValueCorrect = 0;
+uint8_t ReverseDirection = 0;
+uint16_t LastOCR1A = 0;
+uint16_t TimerOVF_count_Max = 0;
+uint8_t countOfResetZero = 0;
+uint8_t ResetScale = 0;
+uint16_t TimeOfReset = 0;
+//uint16_t LengthOfHold = 0;
+//uint16_t WhenHold = 0;
+uint8_t SendAddTimes = 0;
+uint16_t OCR1A_Max;
+uint16_t OCR1B_Max;
+uint16_t MinCorrectValue = 0;
+uint8_t UpChange = 0;
+uint8_t ChangeDirection = 0;
+uint8_t DetectOCR1B;
+uint8_t SetValueMode = 0;
 
 
-ISR(TIMER1_OVF_vect)
-{
-	TimerOVF_count++;
-	if (TimerOVF_count ==900)
-	{
-		TimerOVF_countFinish = 1;
-	}
 
-}
-
-void DefineScale()
-{
-	// one time set up settings for defining scale mode
-	if (DefineScaleMode == 1)
-	{
-		BL_SendStr("Starting...");
-		UCSR0B &= ~(1 << RXCIE0) | (1 << RXEN0); // disable rx interrupt while define scale
-		TIMSK1 |= (1 << TOIE1);
-		TCNT1 = 0; // reset timer1
-		TimerOVF_count = 0;
-		DefineScaleMode = 2;  // set up mode "in process"
-
-	}
-
-	// if spent 0.2ms time try to get OCR value of new ScaleValue
-	if (TimerOVF_countFinish == 1)
-	{
-		TimerOVF_countFinish = 0;
-		TimerOVF_count = 0;
-		if ((ScaleValue > 0) && (ScaleValue > ScaleValueChange))
-		{
-			//if ((DiscretValue == 0) || (ScaleValueChange < ScaleValue))
-			//{
-				//DiscretValue = ScaleValue - ScaleValueChange;
-				//DefinedDiscret = 1;
-			//}
-			//ScaleValueChange = ScaleValue;
-			BL_SendStr("d,");
-			StrOCRptr1 = IntToStrKey(OCR1A, StrOCR1, 'o', ',');
-			BL_SendStr(StrOCRptr1);
-			BL_SendStr(SWscaleValueForBL);
-			BL_SendStr("\n\r");
-			
-			//if (((ScaleValue - ScaleValueChange) < DiscretValue) || (DefinedDiscret == 1))
-			//{
-				//DiscretValue = ScaleValue - ScaleValueChange;
-				//DefinedDiscret = 1;
-				//
-			//} // if first time changed ScaleValue, i.e got discret
-
-		}
-
-		OCR1A++; // increase PWM signal on optocoupler
-	}
-	if (OCR1A >= 800)
-	{
-		BL_SendStr("df");
-		BL_SendStr("df");
-		BL_SendStr("df");
-		BL_SendStr("df");
-		BL_SendStr("df");
-		RESET;
-	}
-
-
-}
 
 char* IntToStr(uint16_t n, char *buffer)
 {
@@ -144,6 +95,221 @@ char* IntToStr(uint16_t n, char *buffer)
 	return buffer;
 }
 
+ISR(TIMER1_OVF_vect)
+{
+	TimerOVF_count++;
+	if (TimerOVF_count == TimerOVF_count_Max)
+	{
+		TimerOVF_countFinish = 1;
+	}
+
+}
+
+void Start_TimerOVFcount(uint16_t MaxValue)
+	{
+		TIMSK1 |= (1 << TOIE1);
+		TCNT1 = 0; // reset timer1
+		TimerOVF_count = 0;
+		TimerOVF_count_Max = MaxValue;		
+	}
+	
+	
+
+void DefineScale()
+{
+	// one time set up settings for defining scale mode
+	if (DefineScaleMode == 1)
+	{
+		//UCSR0B &= ~(1 << RXCIE0) | (1 << RXEN0); // disable rx interrupt while define scale
+		Start_TimerOVFcount(900);
+		DefineScaleMode = 2;  // set up mode "in process"
+
+	}
+
+	// if spent 0.2ms time try to get OCR value of new ScaleValue
+	if ((TimerOVF_countFinish == 1) && (DefineScaleMode == 2))
+	{
+		TimerOVF_countFinish = 0;
+		TimerOVF_count = 0;
+		
+		
+		if ((ScaleValue > 0) && (ScaleValue > ScaleValueChange) && (DefineKG == 1))
+		{
+			StrOCRptr1 = IntToStrKey(OCR1A, StrOCR1, 'k', ',');
+			BL_SendStr(SWscaleValueForBL);
+			BL_SendStr(StrOCRptr1);
+			BL_SendStr("\n\r");
+		}
+		
+		if(DefineKG == 1)
+		{
+			OCR1A++; // increase PWM signal on optocoupler
+		}
+			
+		if (DefinePercent == 1)
+		{
+		
+				if ((ChangeDirection == 1) && (UpChange == 0))
+				{
+					if (ScaleValue < ScaleValueChange)
+					{
+						ChangeDirection = 0;
+					} 
+					else if (ScaleValue > ScaleValueChange)
+					{
+						UpChange = 1;
+					}
+				}
+				
+				//else if ((ChangeDirection == 1) && (UpChange == 1))
+				//{
+					//if (ScaleValue > ScaleValueChange)
+					//{
+						//ChangeDirection = 0;
+					//}
+					//else if (ScaleValue < ScaleValueChange)
+					//{
+						//UpChange = 0;
+					//}
+				//}
+				
+		
+			if (((ScaleValue >= 0) && (ValueCorrect == 1)) && ((UpChange == 0) || ((UpChange == 1) && (ChangeDirection == 1))))
+			
+			{
+				ValueCorrect = 0;
+				ReverseDirection = 0;
+				
+				StrOCRptr2 = IntToStrKey(OCR1B, StrOCR2, '%', ',');
+				StrOCRptr1 = IntToStr(OCR1A, StrOCR1);
+				BL_SendStr(StrOCRptr2);
+				BL_SendStr("o");
+				BL_PutChar('+');
+				BL_SendStr(StrOCRptr1);
+				BL_SendStr("\n\r");
+				OCR1A = 0;
+				DetectOCR1B = 0;
+			}
+			
+			if ((ScaleValue <= 0) && (ValueCorrect == 1) && (UpChange == 1) && (ChangeDirection == 0))
+				
+			{
+				ValueCorrect = 0;
+				ReverseDirection = 0;
+				
+				StrOCRptr2 = IntToStrKey(OCR1B, StrOCR2, '%', ',');
+				StrOCRptr1 = IntToStr(OCR1A, StrOCR1);
+				BL_SendStr(StrOCRptr2);
+				BL_SendStr("o");
+				BL_PutChar('-');
+				BL_SendStr(StrOCRptr1);
+				BL_SendStr("\n\r");
+				OCR1A = 0;
+				}
+				
+				
+			if ((ScaleValue > ScaleValueChange) && (UpChange == 1) && (ReverseDirection == 0))
+			{
+				if ((ScaleValueChange < 0) && (DetectOCR1B == 1))
+				{
+					CORRECT_INIT_PLUS
+					OCR1A = LastOCR1A;
+					ReverseDirection = 1;
+					ScaleValueChange = ScaleValue;
+					
+					
+				}
+				else if (ScaleValueChange > 0)
+				{
+					CORRECT_INIT_MINUS
+					OCR1A = LastOCR1A*0.95;
+					ReverseDirection = 1;
+					ScaleValueChange = ScaleValue;
+				}
+				
+				
+			}
+			
+			
+			if (ReverseDirection == 0)
+				{
+					OCR1B++;
+					DetectOCR1B = 1;
+					if (ScaleValue == ScaleValueChange)
+					{
+						ChangeDirection = 1;
+					}
+					
+				}
+		
+			
+				
+			if ((ScaleValue < ScaleValueChange) && (UpChange == 0) && (ReverseDirection == 0))
+			{
+					CORRECT_INIT_PLUS
+					OCR1A = LastOCR1A*0.95;
+					ReverseDirection = 1;
+					ScaleValueChange = ScaleValue;
+			}
+			
+			
+			
+			
+			
+			if (ReverseDirection == 1)
+				if (UpChange == 0)
+				{
+					OCR1A++;
+					ValueCorrect = 1;
+					LastOCR1A = OCR1A;
+				}
+				
+				if ((UpChange == 1) && (ScaleValue < 0))
+				{
+					OCR1A--;
+					ValueCorrect = 1;
+					LastOCR1A = OCR1A;
+				}
+				if ((UpChange == 1) && (ScaleValue > 0))
+				{
+					OCR1A++;
+					ValueCorrect = 1;
+					LastOCR1A = OCR1A;
+				}
+				
+				
+		}
+		
+	}
+	if ((OCR1A >= OCR1A_Max) && (DefineKG == 1))
+	
+	{
+		DefineScaleMode = 0;
+		DefineKG = 0;
+		OCR1A = 0;
+		TimerOVF_count = 0;
+		BL_SendStr("k,f,k,f,k,f");
+	
+		BL_FlushRxBuf();
+		//RESET;
+	}
+	
+	if (((OCR1B > OCR1B_Max) && (DefinePercent == 1)) || (OCR1A > 1000))
+	{
+		BL_SendStr("%1,f,%1,f");
+		DefineScaleMode = 0;
+		DefinePercent = 0;
+		OCR1B = 0;
+		OCR1A = 0;
+		TimerOVF_count = 0;
+		BL_FlushRxBuf();
+	}
+
+
+}
+
+
+
 char* IntToStrKey(uint16_t val, char *buffer, char key1, char key2)
 {
 	char *str0;
@@ -154,6 +320,10 @@ char* IntToStrKey(uint16_t val, char *buffer, char key1, char key2)
 	str1 = str2 - 1;
 	*str0 = key1;
 	*str1 = key2;
+	//if (*str0 == '0')
+	//{
+		//str0 = str0 + 1;
+	//}
 	return str0;
 }
 
@@ -166,7 +336,7 @@ void PWM_Init()
 	TCCR2B = (1 << CS20); // Start Timer2 with prescaler 1
 	OCR2A = 0x00; // Reset Compare register OCR of Timer2
 	/* Timer1 for kg correction */
-	TCCR1A = (1 << COM1A1) |(1 << COM1B1) |  (1 << WGM11) | (1 << WGM10);
+	TCCR1A = (1 << COM1A1) |(1 << COM1B1) |(1 << WGM10) |(1 << WGM11);
 	TCCR1B = (1 << WGM12) | (1 << CS10);
 	OCR1A = 0x0000;
 	OCR1B = 0x0000;
@@ -186,37 +356,94 @@ void PWM_PinValue1()
 
 void PWM_PinValue2()
 {
-	//OCR2A = PWMvalue;
 	OCR1B = PWMvalue2;
-	StrOCRptr2 = IntToStrKey(OCR2B, StrOCR2, 'o', ',');
-	if (StrOCR2_lastValue != OCR2B)
+	StrOCRptr2 = IntToStrKey(OCR1B, StrOCR2, 'o', ',');
+	if (StrOCR2_lastValue != OCR1B)
 	{
 		BL_SendStr(StrOCRptr2);
-		StrOCR2_lastValue = OCR2B;
+		StrOCR2_lastValue = OCR1B;
 	}
 }
 
 void BL_GetMessage() // getting value from ring buffer to BlutoothMessage array
 {
 
-	for (int i = 0; i<8; i++)
+	for (int i = 0; i<16; i++)
 	{
 		BluetoothMessage[i] = BL_GetChar();
 	}
 	
 }
 
+void ResetCorrect()
+{
+	PWMvalue1 = 0;
+	PWMvalue2 = 0;
+	OCR1A = 0;
+	OCR1B = 0;
+}
+
 void BL_DefComd()
 {
+	if (ResetScale == 1)
+	{
+		if (TimerOVF_countFinish == 1)
+		{
+			if (countOfResetZero < TimeOfReset)
+				{	
+					if (countOfResetZero & 1)
+						{
+							PORTD |= (1 << PORTD7);
+						} 
+					else
+						{
+							PORTD &= ~(1 << PORTD7);
+						}
+						//
+					//if (countOfResetZero == LengthOfHold)
+						//{
+							//PORTD |= (1 << PORTD6);
+						//}
+					//if (countOfResetZero == WhenHold)
+						//{
+						   //PORTD &= ~(1 << PORTD6);
+						//}
+					//if (countOfResetZero == (WhenHold+LengthOfHold))
+						//{
+							//PORTD &= ~(1 << PORTD6);
+						//}
+						//
+					//if (countOfResetZero == (WhenHold+2*LengthOfHold))
+					//{
+							//PORTD |= (1 << PORTD6);
+//
+					//}//hold things //hold
+					countOfResetZero++;	
+					TimerOVF_count = 0;
+					TimerOVF_countFinish = 0;
+				}
+			else
+				{
+					TIMSK1 &=  ~(1 << TOIE1);
+					countOfResetZero = 0;
+					
+					ResetScale = 0;
+					PORTD |= (1 << PORTD7); // zero pin 
+					//PORTD |= (1 << PORTD6); //hold pin
+
+				}
+			
+		}
+	}
+	
+	
 	if (BLmesIsComplete == 1)
 	{
 		BL_GetMessage();
+			
 		if ((BluetoothMessage[0] == '$') && (BluetoothMessage[1] == '+'))
 		{
-			PORTB |= (1 << PORTB5);
-			PORTC |= (1 << PORTC0);
-			PORTC |= (1 << PORTC1);
-			PORTC &= ~(1 << PORTC2);
+			CORRECT_INIT_PLUS
 			PWMvalue1 = atoi(BluetoothMessage + 2);
 			StrPWMvalueptr1 = IntToStrKey(PWMvalue1, StrPWMvalue1, 'p', ',');
 			BL_SendStr("+");
@@ -224,10 +451,7 @@ void BL_DefComd()
 		}
 		else if ((BluetoothMessage[0] == '$') && (BluetoothMessage[1] == '-'))
 		{
-			PORTB |= (1 << PORTB5);
-			PORTC &= ~(1 << PORTC0);
-			PORTC |= (1 << PORTC1);
-			PORTC &= ~(1 << PORTC2);
+			CORRECT_INIT_MINUS
 			PWMvalue1 = atoi(BluetoothMessage + 2);
 			StrPWMvalueptr1 = IntToStrKey(PWMvalue1, StrPWMvalue1, 'p', ',');
 			BL_SendStr("-");
@@ -236,50 +460,80 @@ void BL_DefComd()
 			
 		else if ((BluetoothMessage[0] == '$') && (BluetoothMessage[1] == '%'))
 		{
-			PWMvalue2 = atoi(BluetoothMessage + 2);
+			
+			if (BluetoothMessage[2] == 'z')
+			{
+				
+				PWMvalue2 = atoi(BluetoothMessage + 3);
+				
+				Start_TimerOVFcount(TimerOVF_count_Max);
+				ResetScale = 1;
+				//BL_SendStr("z%");
+			}
+			
+			if (BluetoothMessage[2] == 'a')
+			{
+				CORRECT_INIT_PLUS
+				PWMvalue2 = atoi(BluetoothMessage + 3);
+				//BL_SendStr("a%");
+			}
+			
+			
 			StrPWMvalueptr2 = IntToStrKey(PWMvalue2, StrPWMvalue2, 'p', ',');
-			BL_SendStr("%");
+			
 			BL_SendStr(StrPWMvalueptr2);
 			
 			
 		}
-		
-		else if ((BluetoothMessage[0] == '!') && (BluetoothMessage[1] == 0x30) && (BluetoothMessage[2] == 0x20) && (BluetoothMessage[3] == 0x30) && (BluetoothMessage[4] == 0x20)) // Reset MCU before starting firmware
+					
+		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == 'c') && (DefineScaleMode == 0))
 		{
-			RESET;
+				CORRECT_INIT_PLUS
+				DefineKG = 1;
+				DefineScaleMode = 1;  // first time we entry into this function
+				OCR1A_Max = atoi (BluetoothMessage + 2);
+				DefineScale();
+		}
+		
+		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == 'e') && (DefineScaleMode == 0))
+		{
+			ResetCorrect();	
 		}
 		
 		
-			
-		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == 'c'))
+		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == 's') && (DefineScaleMode == 0))
 		{
-			BL_SendStr("ok");
-			
-			if (DefineScaleMode == 0)
-			{
-				PORTB |= (1 << PORTB5);
-				PORTC |= (1 << PORTC0);
-				PORTC |= (1 << PORTC1);
-				PORTC &= ~(1 << PORTC2);
-				DefineScaleMode = 1;  // first time we entry into this function
-				DefineScale();
-			}
+			SetValueMode = atoi(BluetoothMessage + 2);
 		}
 		
-		
-		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == '%'))
+		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == 'm') && (DefineScaleMode == 0)) // set up min correct value
 		{
-			BL_SendStr("ok");
+			MinCorrectValue = atoi (BluetoothMessage + 2);
+		}
+				
+		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == 'z') && (DefineScaleMode == 0))
+		{
+			TimerOVF_count_Max = 600; //atoi (BluetoothMessage + 2)
+			TimeOfReset = 20;
+			ResetScale = 1;
+			Start_TimerOVFcount(TimerOVF_count_Max);
+
+			BL_SendStr("z%");
+			//LengthOfHold = atoi (BluetoothMessage + 9);
+			//WhenHold = atoi (BluetoothMessage + 11);
+			//PORTD &= ~ (1 << PORTD6);
 			
-			if (DefineScaleMode == 0)
-			{
-				PORTB |= (1 << PORTB5);
-				PORTC |= (1 << PORTC0);
-				PORTC |= (1 << PORTC1);
-				PORTC &= ~(1 << PORTC2);
+			
+		}
+		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == '%') && (DefineScaleMode == 0))
+		{
+				//CORRECT_INIT_PLUS
+				DefinePercent = 1;
 				DefineScaleMode = 1;  // first time we entry into this function
+				OCR1B_Max = atoi (BluetoothMessage + 2);
+				ScaleValueChange = ScaleValue;
 				DefineScale();
-			}
+				
 		}
 		
 			
@@ -335,46 +589,68 @@ void BL_DefComd()
 		
 		}
 		
-	BLmesIsComplete = 0;  // reset flag "complete message from smartphone"
-	BL_FlushRxBuf();  // flush our buffer and start from the beginning
-}
+		BLmesIsComplete = 0;  // reset flag "complete message from smartphone"
+		BL_FlushRxBuf();  // flush our buffer and start from the beginning
+	}
 }
 
 void BL_SendMsg()
 {
-	if ((!DefineScaleMode) && (ScaleValue != ScaleValueChange) && (ScaleValue > 0) && (DebugAsk = 0))
+	
+	if ((!DefineScaleMode) && (ScaleValue != ScaleValueChange) && (ScaleValue != 0) && (DebugAsk == 0))	
 	{
-		ScaleValueChange = ScaleValue;
+		
 		BL_SendStr(SWscaleValueForBL);
+		
+		
+		ScaleValueChange = ScaleValue;
 	}
 		
-	else if ((!DefineScaleMode) && (ScaleValue != ScaleValueChange) && (ScaleValue > 0) && (DebugAsk = 1))	
+	else if ((!DefineScaleMode) && (ScaleValue != ScaleValueChange) && (ScaleValue > 0) && (DebugAsk == 1))	
 		{
 		ScaleValueChange = ScaleValue;
 		BL_SendStr(SWscaleValueForBL);
 		StrScaleDetectptr = IntToStrKey(ScaleValueDetect, StrScaleValueDetect, 's', ',');
-		
-		//BL_SendStr(StrScaleDetectptr);
-		//BL_SendStr(StrOCRptr1);
-		//BL_SendStr(StrOCRptr2);
-		//BL_SendStr(StrPWMvalueptr1);
-		//BL_SendStr("\n\r");
 		}
 }
 
+
+
+
 void BL_SetCorrect()
 
-{
-	if (PWMvalue1 && (ScaleValue > 10))
+{	
+	//if (((PWMvalue1)||(PWMvalue2)) && (!DefineScaleMode) // && (!SetValueMode))
+	//{
+		//OCR1A = 0;
+		//OCR1B = 0;
+	//}
+	
+	//if (SetValueMode == 1) //(ScaleValue >= MinCorrectValue) &&
+	//{
+		//if (PWMvalue1)
+		//{
+			//PWM_PinValue1();
+ 	//
+		//}
+		//if (PWMvalue2)
+		//{
+			//PWM_PinValue2();
+		//}
+	//}
+	
+	if ((PWMvalue1) && (!DefineScaleMode)) //&& (ScaleValue >= MinCorrectValue)) //(ScaleValue >= MinCorrectValue) && 
 	{
-		PWM_PinValue1();   // write gotten correction value from smartphone to OCR2A for change OC2A pin PWM
+		PWM_PinValue1();   // write gotten correction value from smartphone to OCR2A for change OC1A pin PWM
 		ScaleValueDetect = ScaleValue;
 	}
-	if (PWMvalue2 && (ScaleValue > 10))
+	if  ((PWMvalue2) && (!DefineScaleMode)) //&& (ScaleValue >= MinCorrectValue)) //&& (ScaleValue >= MinCorrectValue)
 	{
-		PWM_PinValue2();   // write gotten correction value from smartphone to OCR2A for change OC2A pin PWM
+		PWM_PinValue2();   // write gotten correction value from smartphone to OCR2A for change OC1B pin PWM
 		ScaleValueDetect = ScaleValue;
 	}
+	
+	
 
 	if ((ScaleValue < (ScaleValueDetect - 2)) && (ScaleValue > 5) && (!DefineScaleMode))
 	{

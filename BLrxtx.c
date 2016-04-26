@@ -22,6 +22,7 @@ char BlrxChar = '\0';
 uint8_t BLlongMsg = 0;
 //uint8_t TwoByteMode = 0;
 //char BLFewBytes[2];
+uint8_t SendStrBusy = 0;
 
 
 
@@ -106,16 +107,16 @@ void BL_PutOneByte(uint8_t value)
 
 void BL_SendStr(char *data)// send string start from the first member with address pointed by *data
 {
-	char sym;
-	while(*data) // while data isn't '\0' or while data consist any data
-	{
-		sym = *data++; // write consisting value of data into sym local variable
-		BL_PutChar(sym); // call function of putting every value into the ring buffer 
-	}
-	if (*data == '\0') // & (TwoByteMode == 0))
-	{
-		BL_PutChar(',');
-	}
+		char sym;
+		while(*data) // while data isn't '\0' or while data consist any data
+		{
+			sym = *data++; // write consisting value of data into sym local variable
+			BL_PutChar(sym); // call function of putting every value into the ring buffer
+		}
+		if (*data == '\0') // & (TwoByteMode == 0))
+		{
+			BL_PutChar(',');
+		}	
 }
 
 

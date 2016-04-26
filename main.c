@@ -8,8 +8,6 @@
 void WaitSketch()
 {
 	DDRC |= (1 << PORTC0)|(1 << PORTC1)|(1 << PORTC2)|(1 << PORTC3);
-	//DDRD |= (1 << PORTD7);
-	//PORTD &= ~( 1 << PORTD7);
 	PORTC |= (1 << PORTC3);
 }
 
@@ -20,8 +18,9 @@ int main(void)
 	BL_Init();
 	PWM_Init();
 	WaitSketch();
+	DDRD |= (1 << PORTD6) | (1 << PORTD7); // Pin for push Zero Button on Scale
+	PORTD |= (1 << PORTD6) | (1 << PORTD7);
 
-	
 	while (1)
 	{
 		
@@ -38,9 +37,5 @@ int main(void)
 		{
 			DefineScale();
 		}
-
-		//BL_SendStr(SWscaleValueForBL);
-		//BL_SendStr("\n\r");
-
 	}
 }
