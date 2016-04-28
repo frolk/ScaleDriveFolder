@@ -41,7 +41,7 @@ extern void SW_GetScaleValue();
 static volatile unsigned char SW_RX_Data;     //!< Storage for received bits.
 static volatile unsigned char SW_RX_Bit_Count; //!< RX bit counter.
 
-extern char SWrxMessage[25];
+extern volatile char SWrxMessage[25];
 extern volatile uint8_t SWrxDataPending;
 static volatile uint8_t SWrxBuf[SW_SIZE_BUF];
 static volatile uint8_t SWrxBufTail;

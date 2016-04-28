@@ -55,8 +55,7 @@ uint8_t UpChange = 0;
 uint8_t ChangeDirection = 0;
 uint8_t DetectOCR1B;
 uint8_t SetValueMode = 0;
-
-
+uint8_t ButValue = 0;
 
 
 char* IntToStr(uint16_t n, char *buffer)
@@ -385,6 +384,16 @@ void ResetCorrect()
 
 void BL_DefComd()
 {
+	if (ButValue)
+	{
+		if (TimerOVF_countFinish == 1)
+		{
+			ButValue = 0;	
+			TimerOVF_count = 0;
+			TimerOVF_countFinish = 0;
+			PORTD |= (1 << PORTD4) |(1 << PORTD5) |	(1 << PORTD6) |	(1 << PORTD7);
+		}
+	}
 	if (ResetScale == 1)
 	{
 		if (TimerOVF_countFinish == 1)
@@ -525,6 +534,51 @@ void BL_DefComd()
 			
 			
 		}
+		
+		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == '4') && (DefineScaleMode == 0))
+		{
+			TimerOVF_count_Max = 15000; //atoi (BluetoothMessage + 2)
+			Start_TimerOVFcount(TimerOVF_count_Max);
+			PORTD &= ~(1 << PORTD4);
+			BL_SendStr("ON/OFF");
+			TimerOVF_count = 0;
+			TimerOVF_countFinish = 0;
+			ButValue = 1;
+			
+			
+		}
+		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == '5') && (DefineScaleMode == 0))
+		{
+			TimerOVF_count_Max = 900; //atoi (BluetoothMessage + 2)
+			Start_TimerOVFcount(TimerOVF_count_Max);
+			PORTD &= ~(1 << PORTD5);
+			BL_SendStr("HOLD");
+			TimerOVF_count = 0;
+			TimerOVF_countFinish = 0;
+			ButValue = 1;
+		}
+		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == '6') && (DefineScaleMode == 0))
+		{
+			TimerOVF_count_Max = 900; //atoi (BluetoothMessage + 2)
+			Start_TimerOVFcount(TimerOVF_count_Max);
+			PORTD &= ~(1 << PORTD6);
+			BL_SendStr("TARE");
+			TimerOVF_count = 0;
+			TimerOVF_countFinish = 0;
+			ButValue = 1;
+		}
+		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == '7') && (DefineScaleMode == 0))
+		{
+			TimerOVF_count_Max = 900; //atoi (BluetoothMessage + 2)
+			Start_TimerOVFcount(TimerOVF_count_Max);
+			PORTD &= ~(1 << PORTD7);
+			BL_SendStr("ZERO");
+			TimerOVF_count = 0;
+			TimerOVF_countFinish = 0;
+			ButValue = 1;
+		}
+		
+		
 		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == '%') && (DefineScaleMode == 0))
 		{
 				//CORRECT_INIT_PLUS
@@ -614,17 +668,14 @@ void BL_SendMsg()
 		}
 }
 
-
-
-
 void BL_SetCorrect()
 
 {	
-	//if (((PWMvalue1)||(PWMvalue2)) && (!DefineScaleMode) // && (!SetValueMode))
-	//{
-		//OCR1A = 0;
-		//OCR1B = 0;
-	//}
+	if (((PWMvalue1)||(PWMvalue2)) && (!DefineScaleMode) && (ScaleValue <= MinCorrectValue))// && (!SetValueMode))
+	{
+		OCR1A = 0;
+		OCR1B = 0;
+	}
 	
 	//if (SetValueMode == 1) //(ScaleValue >= MinCorrectValue) &&
 	//{
@@ -639,12 +690,12 @@ void BL_SetCorrect()
 		//}
 	//}
 	
-	if ((PWMvalue1) && (!DefineScaleMode)) //&& (ScaleValue >= MinCorrectValue)) //(ScaleValue >= MinCorrectValue) && 
+	if ((PWMvalue1) && (!DefineScaleMode) && (ScaleValue >= MinCorrectValue)) //(ScaleValue >= MinCorrectValue) && 
 	{
 		PWM_PinValue1();   // write gotten correction value from smartphone to OCR2A for change OC1A pin PWM
 		ScaleValueDetect = ScaleValue;
 	}
-	if  ((PWMvalue2) && (!DefineScaleMode)) //&& (ScaleValue >= MinCorrectValue)) //&& (ScaleValue >= MinCorrectValue)
+	if  ((PWMvalue2) && (!DefineScaleMode) && (ScaleValue >= MinCorrectValue)) //&& (ScaleValue >= MinCorrectValue)
 	{
 		PWM_PinValue2();   // write gotten correction value from smartphone to OCR2A for change OC1B pin PWM
 		ScaleValueDetect = ScaleValue;

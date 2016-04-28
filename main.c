@@ -18,8 +18,8 @@ int main(void)
 	BL_Init();
 	PWM_Init();
 	WaitSketch();
-	DDRD |= (1 << PORTD6) | (1 << PORTD7); // Pin for push Zero Button on Scale
-	PORTD |= (1 << PORTD6) | (1 << PORTD7);
+	DDRD |= (1 << PORTD4) | (1 << PORTD5) | (1 << PORTD6) | (1 << PORTD7); // Pin for push Zero Button on Scale
+	PORTD |= (1 << PORTD4) |(1 << PORTD5) |(1 << PORTD6) | (1 << PORTD7);
 
 	while (1)
 	{

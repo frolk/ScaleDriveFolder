@@ -12,11 +12,15 @@ static volatile uint8_t SWrxBufTail = 0;
 static volatile uint8_t SWrxBufHead = 0;
 static volatile uint8_t SWnumBit;    // What's number of bit. It's need for delaying
 static volatile uint8_t SWrxCount = 0;// Receive variables
-char SWrxMessage[25];
+volatile char SWrxMessage[25];
 volatile uint8_t SWrxDataPending;
 volatile uint8_t SWmesIsComplete;
 char SWscaleValueForBL[16];
 volatile float ScaleValue = 0;
+//uint8_t PortMinValue = 5;
+//uint8_t PortMaxValue = 14;
+uint8_t PortMinValue = 8;
+uint8_t PortMaxValue = 17;
 
 void SW_FlushRxBuf()
 {
@@ -146,14 +150,17 @@ void SW_GetMessage(void)
 		SWrxMessage[i] = SWvalue;
 		SWscaleValueForBL[0] = 'v';
 		SWscaleValueForBL[1] = ',';
-		if ( (i>5) && (i<14) && (SWrxMessage[i] != ' ')) // for gs7516
+		if ( (i>PortMinValue) && (i<PortMaxValue) && (SWrxMessage[i] != ' ')) // for gs7516
 			{
 				SWscaleValueForBL[j] = SWvalue;
 				j++;
 			}
-		if (i==14)
+		if (i==PortMaxValue)
 		{
 			SWscaleValueForBL[j] = 0x0D;
+			SWrxBufHead = 0;
+			SWrxBufTail = 0;
+			break;
 		}
 		//if ( (i>5) && (i<14) && (SWrxMessage[i] != ' ')) // for gs7516
 		//if ( (i>8) && (i<18) && (SWrxMessage[i] != ' ')) // for ci-5010
