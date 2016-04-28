@@ -19,8 +19,8 @@ char SWscaleValueForBL[16];
 volatile float ScaleValue = 0;
 //uint8_t PortMinValue = 5;
 //uint8_t PortMaxValue = 14;
-uint8_t PortMinValue = 8;
-uint8_t PortMaxValue = 17;
+uint8_t PortMinValue = 9;
+uint8_t PortMaxValue = 16;
 
 void SW_FlushRxBuf()
 {
@@ -140,6 +140,34 @@ char SW_GetChar(void)
 
 }
 
+void SW_GetScaleValueMes(void)
+{
+	
+	SWscaleValueForBL[0] = 'v';
+	SWscaleValueForBL[1] = ',';
+	uint8_t i;
+	uint8_t j=2;
+	
+	
+	for (i = PortMinValue; i<=PortMaxValue; i++)
+	{
+		if (SWrxBuf[i] != ' ')
+		{
+			SWscaleValueForBL[j] = SWrxBuf[i];
+			j++;
+		}
+		
+		if (i == PortMaxValue)
+		{
+			SWscaleValueForBL[j] = 0x0D;
+			SWrxBufHead = 0;
+			SWrxBufTail = 0;
+			SWrxCount = 0;
+		}
+	}
+}
+
+
 void SW_GetMessage(void)
 {
 	uint8_t j;
@@ -160,12 +188,14 @@ void SW_GetMessage(void)
 			SWscaleValueForBL[j] = 0x0D;
 			SWrxBufHead = 0;
 			SWrxBufTail = 0;
-			break;
+			
 		}
 		//if ( (i>5) && (i<14) && (SWrxMessage[i] != ' ')) // for gs7516
 		//if ( (i>8) && (i<18) && (SWrxMessage[i] != ' ')) // for ci-5010
 	}
 }
+
+
 
 void SW_GetScaleValue(void)
 {
@@ -176,7 +206,8 @@ void SW_GetScaleValue(void)
 	if(SWmesIsComplete)
 	{
 
-		SW_GetMessage();
+		//SW_GetMessage();
+		SW_GetScaleValueMes();
 		ScaleValue = atof(SWscaleValueForBL+2);
 		SWmesIsComplete = 0;
 	}
