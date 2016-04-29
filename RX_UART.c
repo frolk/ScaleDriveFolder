@@ -12,15 +12,15 @@ static volatile uint8_t SWrxBufTail = 0;
 static volatile uint8_t SWrxBufHead = 0;
 static volatile uint8_t SWnumBit;    // What's number of bit. It's need for delaying
 static volatile uint8_t SWrxCount = 0;// Receive variables
-volatile char SWrxMessage[25];
+//volatile char SWrxMessage[25];
 volatile uint8_t SWrxDataPending;
 volatile uint8_t SWmesIsComplete;
 char SWscaleValueForBL[16];
 volatile float ScaleValue = 0;
 //uint8_t PortMinValue = 5;
 //uint8_t PortMaxValue = 14;
-uint8_t PortMinValue = 9;
-uint8_t PortMaxValue = 16;
+uint8_t PortMinValue = 6;
+uint8_t PortMaxValue = 13;
 
 void SW_FlushRxBuf()
 {

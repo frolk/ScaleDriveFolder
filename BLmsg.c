@@ -51,6 +51,7 @@ uint8_t SendAddTimes = 0;
 uint16_t OCR1A_Max;
 uint16_t OCR1B_Max;
 uint16_t MinCorrectValue = 0;
+uint16_t TurnCorrectOff = 0;
 uint8_t UpChange = 0;
 uint8_t ChangeDirection = 0;
 uint8_t DetectOCR1B;
@@ -513,13 +514,22 @@ void BL_DefComd()
 		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == 's') && (DefineScaleMode == 0))
 		{
 			SetValueMode = atoi(BluetoothMessage + 2);
+			
 		}
 		
 		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == 'm') && (DefineScaleMode == 0)) // set up min correct value
 		{
 			MinCorrectValue = atoi (BluetoothMessage + 2);
+				BL_SendStr("CorrOn - ok");
+			
 		}
-				
+		
+		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == 'd') && (DefineScaleMode == 0)) // set up min correct value
+		{
+			TurnCorrectOff = atoi (BluetoothMessage + 2);
+			BL_SendStr("CorrOff - ok");
+		}
+						
 		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == 'z') && (DefineScaleMode == 0))
 		{
 			TimerOVF_count_Max = 600; //atoi (BluetoothMessage + 2)
@@ -537,7 +547,7 @@ void BL_DefComd()
 		
 		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == '4') && (DefineScaleMode == 0))
 		{
-			TimerOVF_count_Max = 15000; //atoi (BluetoothMessage + 2)
+			TimerOVF_count_Max = 8000; //atoi (BluetoothMessage + 2)
 			Start_TimerOVFcount(TimerOVF_count_Max);
 			PORTD &= ~(1 << PORTD4);
 			BL_SendStr("ON/OFF");
@@ -549,7 +559,7 @@ void BL_DefComd()
 		}
 		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == '5') && (DefineScaleMode == 0))
 		{
-			TimerOVF_count_Max = 900; //atoi (BluetoothMessage + 2)
+			TimerOVF_count_Max = 700; //atoi (BluetoothMessage + 2)
 			Start_TimerOVFcount(TimerOVF_count_Max);
 			PORTD &= ~(1 << PORTD5);
 			BL_SendStr("HOLD");
@@ -559,7 +569,7 @@ void BL_DefComd()
 		}
 		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == '6') && (DefineScaleMode == 0))
 		{
-			TimerOVF_count_Max = 900; //atoi (BluetoothMessage + 2)
+			TimerOVF_count_Max = 700; //atoi (BluetoothMessage + 2)
 			Start_TimerOVFcount(TimerOVF_count_Max);
 			PORTD &= ~(1 << PORTD6);
 			BL_SendStr("TARE");
@@ -569,10 +579,10 @@ void BL_DefComd()
 		}
 		else if ((BluetoothMessage[0] == '^') && (BluetoothMessage[1] == '7') && (DefineScaleMode == 0))
 		{
-			TimerOVF_count_Max = 900; //atoi (BluetoothMessage + 2)
+			TimerOVF_count_Max = 700; //atoi (BluetoothMessage + 2)
 			Start_TimerOVFcount(TimerOVF_count_Max);
 			PORTD &= ~(1 << PORTD7);
-			BL_SendStr("ZERO");
+			BL_SendStr("TARE");
 			TimerOVF_count = 0;
 			TimerOVF_countFinish = 0;
 			ButValue = 1;
@@ -671,7 +681,7 @@ void BL_SendMsg()
 void BL_SetCorrect()
 
 {	
-	if (((PWMvalue1)||(PWMvalue2)) && (!DefineScaleMode) && (ScaleValue <= MinCorrectValue))// && (!SetValueMode))
+	if (((PWMvalue1)||(PWMvalue2)) && (!DefineScaleMode) && (ScaleValue < TurnCorrectOff)) // && (!SetValueMode))
 	{
 		OCR1A = 0;
 		OCR1B = 0;
@@ -702,15 +712,15 @@ void BL_SetCorrect()
 	}
 	
 	
-
-	if ((ScaleValue < (ScaleValueDetect - 2)) && (ScaleValue > 5) && (!DefineScaleMode))
-	{
-		OCR1A = 0;
-		OCR1B = 0;
-		ScaleValueDetect = 0;
-		StrOCRptr1 = IntToStrKey(OCR1A, StrOCR1, 'o', ',');
-		StrScaleDetectptr = IntToStrKey(ScaleValueDetect, StrScaleValueDetect, 's', ',');
-	}
+//
+	//if ((ScaleValue < (ScaleValueDetect - 2)) && (ScaleValue > 5) && (!DefineScaleMode))
+	//{
+		//OCR1A = 0;
+		//OCR1B = 0;
+		//ScaleValueDetect = 0;
+		//StrOCRptr1 = IntToStrKey(OCR1A, StrOCR1, 'o', ',');
+		//StrScaleDetectptr = IntToStrKey(ScaleValueDetect, StrScaleValueDetect, 's', ',');
+	//}
 
 }
 
