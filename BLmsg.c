@@ -681,7 +681,7 @@ void BL_SendMsg()
 void BL_SetCorrect()
 
 {	
-	if (((PWMvalue1)||(PWMvalue2)) && (!DefineScaleMode) && (ScaleValue < TurnCorrectOff)) // && (!SetValueMode))
+	if (((PWMvalue1)||(PWMvalue2)) && (!DefineScaleMode) && (ScaleValue < TurnCorrectOff) && (ScaleValue > 0)) // && (!SetValueMode))
 	{
 		OCR1A = 0;
 		OCR1B = 0;
